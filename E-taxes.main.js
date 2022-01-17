@@ -1517,9 +1517,9 @@
                     row.insertCell().innerHTML = list.vhfMainSubject
                     row.insertCell().innerHTML = list.vhfAddSubject
                     row.insertCell().innerHTML = new String(Round(Number(list.malinUmumiDeger)-Number(list.malinUmumiEdv)-Number(list?.yolVergisi),2)).replace(/\./,',')
-                    row.insertCell().innerHTML = new String(list.malinUmumiEdv).replace(/\./,',')
-                    row.insertCell().innerHTML = new String(list.yolVergisi).replace(/\./,',')
-                    row.insertCell().innerHTML = new String(list.malinUmumiDeger).replace(/\./,',')
+                    row.insertCell().innerHTML = new String(list.malinUmumiEdv || 0 ).replace(/\./,',')
+                    row.insertCell().innerHTML = new String(list.yolVergisi || 0).replace(/\./,',')
+                    row.insertCell().innerHTML = new String(list.malinUmumiDeger || 0).replace(/\./,',')
                 } catch {
                     continue}
             }
