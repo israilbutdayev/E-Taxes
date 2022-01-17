@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         E-taxes
 // @namespace    http://tampermonkey.net/
-// @version      0.0.0
+// @version      0.0.2
 // @description  050 636 09 56
 // @run-at       document-start
 // @author       Israil Butdayev
