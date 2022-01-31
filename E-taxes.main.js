@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         E-taxes
 // @namespace    http://tampermonkey.net/
-// @version      0.0.0
+// @version      0.0.1
 // @description  050 636 09 56
 // @run-at       document-start
 // @author       Israil Butdayev
@@ -988,6 +988,12 @@
                         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.js'
                         script.defer = true
                         document.head.appendChild(script);
+                        {
+                            const script = document.createElement('script')
+                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                            script.defer = true
+                            document.head.appendChild(script)
+                        }
                         const btn = document.createElement('input');
                         btn.type = 'button';
                         btn.value = 'Download All';
@@ -1088,7 +1094,7 @@
                         "credentials": "include"
                     }).then((response) => response.text())
                     .then(html=>new DOMParser().parseFromString(html,'text/html')).then(doc=>doc.querySelector("col.table_header").parentElement.parentElement.querySelector("tbody > tr:nth-child(3) > td:nth-child(2)").textContent)
-                    const data = `TOKEN=${token}&cmd=BEYANNAMELISTESI&grupSayi=0&${document.querySelector('[name="sorguTipiN"]').checked ? 'sorguTipiN=1&':''}vergiNo=${vergiNo}&${document.querySelector('[name="sorguTipiB"]').checked ? 'sorguTipiB=1&':''}beyannameTanim=${decType}&${document.querySelector('[name="sorguTipiP"]').checked ? 'sorguTipiP=1&':''}donemBasAy=${monthFrom}&donemBasYil=${yearFrom}&donemBitAy=${monthTo}&donemBitYil=${yearTo}&${document.querySelector('[name="sorguTipiV"]').checked ? 'sorguTipiV=1&':''}vdKodu=10&${document.querySelector('[name="sorguTipiZ"]').checked ? 'sorguTipiZ=1&':''}baslangicTarihi=${new Date().toLocaleDateString('ru')}&bitisTarihi=${new Date().toLocaleDateString('ru')}&${document.querySelector('[name="sorguTipiD"]').checked ? 'sorguTipiD=1&':''}durum=4&${document.querySelector('[name="sorguTipiS"]').checked ? 'sorguTipiS=1&':''}sentType=12&${document.querySelector("input[type=checkbox][name='sorguTipiDt']").checked ? 'sorguTipiDt=1&declType='+encodeURI(declType):''}`
+                    const data = `TOKEN=${token}&cmd=BEYANNAMELISTESI&grupSayi=0&${document.querySelector('[name="sorguTipiN"]').checked ? 'sorguTipiN=1&':''}vergiNo=${vergiNo}&${document.querySelector('[name="sorguTipiB"]').checked ? 'sorguTipiB=1&':''}beyannameTanim=${decType}&${document.querySelector('[name="sorguTipiP"]').checked ? 'sorguTipiP=1&':''}donemBasAy=${monthFrom}&donemBasYil=${yearFrom}&donemBitAy=${monthTo}&donemBitYil=${yearTo}&${document.querySelector('[name="sorguTipiV"]').checked ? 'sorguTipiV=1&':''}vdKodu=10&${document.querySelector('[name="sorguTipiZ"]').checked ? 'sorguTipiZ=1&':''}baslangicTarihi=${new Date().toLocaleDateString('ru')}&bitisTarihi=${new Date().toLocaleDateString('ru')}&${document.querySelector('[name="sorguTipiD"]').checked ? 'sorguTipiD=1&':''}durum=4&${document.querySelector('[name="sorguTipiS"]').checked ? 'sorguTipiS=1&':''}sentType=12${document.querySelector("input[type=checkbox][name='sorguTipiDt']").checked ? '&sorguTipiDt=1&declType='+encodeURI(declType):''}`
                     let xmlName;
                     const decs = await fetch('https://www.e-taxes.gov.az/vedop2/ebyn/dispatch', {
                         headers: {
@@ -1143,27 +1149,35 @@
                         const xmlName = parts[2]
                         const date = parts[5]
                         const time = parts[7]
-                        url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
-                        const blob = await fetch(
-                            url, {
-                                headers: {
-                                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                    'accept-language': 'en-US,en;q=0.9',
-                                    'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                    'sec-ch-ua-mobile': '?0',
-                                    'sec-fetch-dest': 'iframe',
-                                    'sec-fetch-mode': 'navigate',
-                                    'sec-fetch-site': 'same-origin',
-                                    'upgrade-insecure-requests': '1',
-                                },
-                                referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                                referrerPolicy: 'strict-origin-when-cross-origin',
-                                body: null,
-                                method: 'GET',
-                                mode: 'cors',
-                                credentials: 'include',
-                            }
-                        ).then(resp=>resp.blob()).catch()
+                        let pckg = await localforage.getItem(PACKAGE_OID+PACKAGE_NAME)
+                        let blob;
+                        if (pckg){
+                            blob = pckg //new Blob([pckg], {type: 'text/plain'});
+                        } else {
+                            url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
+                            let resp = await fetch(
+                                url, {
+                                    headers: {
+                                        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                                        'accept-language': 'en-US,en;q=0.9',
+                                        'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+                                        'sec-ch-ua-mobile': '?0',
+                                        'sec-fetch-dest': 'iframe',
+                                        'sec-fetch-mode': 'navigate',
+                                        'sec-fetch-site': 'same-origin',
+                                        'upgrade-insecure-requests': '1',
+                                    },
+                                    referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
+                                    referrerPolicy: 'strict-origin-when-cross-origin',
+                                    body: null,
+                                    method: 'GET',
+                                    mode: 'cors',
+                                    credentials: 'include',
+                                }
+                            ).catch();
+                            blob = await resp.blob()
+                            localforage.setItem(PACKAGE_OID+PACKAGE_NAME, blob)
+                        }
                         if (dec.querySelector('td:nth-child(11)').textContent==='Kameral'){
                             const zip = new JSZip()
                             const text = await new Response(blob).text()
