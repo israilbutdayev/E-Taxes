@@ -1149,7 +1149,7 @@
                         const xmlName = parts[2]
                         const date = parts[5]
                         const time = parts[7]
-                        let pckg = await localforage.getItem(PACKAGE_OID+PACKAGE_NAME)
+                        let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
                         let blob;
                         if (pckg){
                             blob = pckg //new Blob([pckg], {type: 'text/plain'});
@@ -1176,7 +1176,7 @@
                                 }
                             ).catch();
                             blob = await resp.blob()
-                            localforage.setItem(PACKAGE_OID+PACKAGE_NAME, blob)
+                            localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
                         }
                         if (dec.querySelector('td:nth-child(11)').textContent==='Kameral'){
                             const zip = new JSZip()
