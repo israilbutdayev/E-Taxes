@@ -348,7 +348,7 @@
             for (let i = 0; i < 100; i++){
                 try {
                     document.querySelector("#addRow").addEventListener('click',async (e)=>{
-                        await sleep(200)
+                        await sleep(10)
                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
@@ -359,7 +359,7 @@
             }
 
             async function handleChange (e) {
-                await sleep(200)
+                await sleep(10)
                 const tr = e.target.parentNode.parentNode
                 const value = tr.querySelector('td:nth-child(11)>input').value
                 if (Number(tr.querySelector('td:nth-child(13)>input').value) !=0 ){
