@@ -1274,12 +1274,12 @@
                                     }
                                     if (exp) {
                                         let XMLDoc = xml;
-                                        function getElement(nodeValue, returnNode = "deyer", nodeName = "gosterici") {
+                                        function getElement(nodeValue, parent = 'beyanname', returnNode = "deyer", nodeName = "gosterici") {
                                             if (Number(XMLDoc.querySelector("yil")) < 2020 && returnNode === "deyer") {
                                                 returnNode = "meblag";
                                             }
                                             try {
-                                                return [...XMLDoc.querySelectorAll(nodeName)]
+                                                return [...XMLDoc.querySelector(parent).querySelectorAll(nodeName)]
                                                     .filter((x) => x.textContent == String(nodeValue))[0]
                                                     .parentNode.querySelector(returnNode).textContent;
                                             } catch (error) {
@@ -2530,7 +2530,7 @@
                                             {
                                                 name: "edvHesaplasma",
                                                 data: structure["kodlar"]["edvHesaplasmalar"]["edvHesaplasma"],
-                                                prop: props,
+                                                prop: {meblag:'ƏDV Məbləği'},
                                             },
                                             {},
                                             {
@@ -2587,6 +2587,7 @@
                                             {
                                                 name: "ilave5Gosterici",
                                                 data: structure["kodlar"]["ilave5Gostericiler"]["ilave5Gosterici"],
+                                                parent: 'SifirEdvEnt',
                                                 prop: {
                                                     deyer: "Təqdim edilmiş mal, iş və xidmətlərin dəyəri",
                                                     meblag: "Daxil olmuş məbləğ",
@@ -2680,7 +2681,7 @@
 
                                         for (let j = 0; j < targets.length; j++) {
                                             let target = targets[j];
-                                            let { name, data, prop } = target;
+                                            let { name, parent, data, prop } = target;
                                             if (Object.keys(target).length) {
                                                 for (let h = 0; h < data.length; h++) {
                                                     let node = data[h];
@@ -2689,11 +2690,11 @@
                                                         let td = document.createElement("td");
                                                         if (key === "dedv") {
                                                             td.textContent = String(
-                                                                Math.round(Number(getElement(node.kod2), "deyer") * 0.18 * 100) /
+                                                                Math.round(Number(getElement(node.kod2), parent, "deyer") * 0.18 * 100) /
                                                                 100
                                                             ).replace(".", ",");
                                                         } else {
-                                                            td.textContent = String(getElement(node.kod2, key)).replace(
+                                                            td.textContent = String(getElement(node.kod2, parent, key)).replace(
                                                                 ".",
                                                                 ","
                                                             );
@@ -2731,12 +2732,6 @@
                                             tbody.appendChild(tr);
                                             table.style.borderCollapse = "collapse";
                                             th2.querySelector("th").style.width = "50px";
-                                            const style = document.createElement("style");
-                                            style.textContent = `th,td {
-  border: 2px solid black;
-  width: 100px;
-  min-width: 50px;
-}`;
                                             let children = tbody.children;
                                             if (children.length > 0) {
                                                 function sorting(i = 0) {
@@ -2753,8 +2748,7 @@
 
                                             let newTab = window.open('')
                                             newTab.document.body.appendChild(table);
-                                            newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
-                                            newTab.document.head.appendChild(style);
+                                            newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black;width: 100px ;min-width: 50px;}; </style>')
                                         }
 
                                     }
@@ -3032,9 +3026,7 @@
         lists.sort((a,b)=>(stringToDate(a.createdDate)-stringToDate(b.createdDate)) || (Number(a.vhfNum)-Number(b.vhfNum)));
         if (!document.querySelector("#userChecker").checked){
             const th = ['№','Tipi','Növü','Vəziyyəti','VÖEN','Ödəyici adı','Tarix','Seriya','Nömrəsi','Qeyd','Əlavə qeyd','Əsas məbləğ','Ödənilməli ƏDV','Yol vergisi','Yekun məbləğ']
-            let newTab = window.open()
             const table = document.createElement('table')
-            newTab.document.body.appendChild(table)
             const thead = document.createElement('thead')
             table.appendChild(thead)
             let tr = thead.insertRow()
@@ -3095,6 +3087,8 @@
                     row.insertCell()
                 }
             }
+            let newTab = window.open()
+            newTab.document.body.appendChild(table)
             table.style.borderCollapse = 'collapse'
             newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
         } else {
@@ -3142,9 +3136,7 @@
                 }
             }
             const th = ['№','Tipi','Növü','EQF Statusu','Təqdim edənin VÖEN-i','Təqdim edənin adı','Alcının VÖEN-i','Alcının adı','EQF Tarixi','EQF Seriyası','EQF Nömrəsi','Əsas Qeyd','Əlavə Qeyd','Qaytarmanın tipi','Əsas sənədin seriyası','Əsas sənədin nömrəsi','Əsas Məbləğ','ƏDV Məbləği','Yol vergisi','Ümumi Məbləğ','Sıra №-si','Mal kodu','Mal adı','Barkod','Ölçü vahidi','Malın miqdarı','Malın buraxılış qiyməti','Cəmi qiyməti','Aksiz dərəcəsi','Aksiz məbləği','Cəmi məbləğ','ƏDV-yə cəlb edilən məbləğ','ƏDV-yə cəlb edilməyən məbləğ','ƏDV-dən azad olunan','ƏDV-yə 0 dərəcə ilə cəlb edilən məbləğ','Ödənilməli ƏDV','Yol vergisi məbləği','Yekun məbləğ','Mal/Xidmət']
-            let newTab = window.open()
             const table = document.createElement('table')
-            newTab.document.body.appendChild(table)
             const thead = document.createElement('thead')
             table.appendChild(thead)
             let tr = thead.insertRow()
@@ -3242,6 +3234,8 @@
                     row.insertCell()
                 }
             }
+            let newTab = window.open()
+            newTab.document.body.appendChild(table)
             table.style.borderCollapse = 'collapse'
             newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
         }
