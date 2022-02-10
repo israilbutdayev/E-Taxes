@@ -1033,7 +1033,7 @@
                         btn.value = 'Download All';
                         btn.style.fontSize = '16px';
                         document.querySelector('#bodyDiv').appendChild(btn);
-                        btn.addEventListener('click',downloadAll);
+                        btn.addEventListener('click',()=>downloadAll({dl:true}));
                         document.querySelector("[name='beyannameTanim']").value = 'VAT'
                         document.querySelector("[name='durum'][value='4']").checked = true
                         document.querySelector("[name='donemBasYil']").value = document.querySelector("[name='donemBasYil']").options[document.querySelector("[name='donemBasYil']").options.length-1].value
@@ -1055,18 +1055,12 @@
                         label.appendChild(labelText)
                         document.querySelector("#bodyDiv").appendChild(label)
                         {
-                            const label = document.createElement('label')
-                            label.id = 'Export'
-                            label.style.fontSize = '14px'
-                            const labelText = document.createTextNode('text')
-                            labelText.textContent = 'Yeni səhifədə göstər.'
-                            const checkbox = document.createElement('input')
-                            checkbox.type = 'checkbox';
-                            checkbox.id = 'Exp'
-                            checkbox.checked = true
-                            label.appendChild(checkbox)
-                            label.appendChild(labelText)
-                            document.querySelector("#bodyDiv").appendChild(label)
+                            const btn = document.createElement('input');
+                            btn.type = 'button';
+                            btn.value = 'Export';
+                            btn.style.fontSize = '16px';
+                            document.querySelector('#bodyDiv').appendChild(btn);
+                            btn.addEventListener('click',()=>downloadAll({exp:true}));
                         }
                     } catch(error) {
                         if (count>0){
@@ -1075,7 +1069,7 @@
                         }
                     }};
                 append();
-                async function downloadAll() {
+                async function downloadAll({dl=false, exp=false}) {
                     const token = document.querySelector('#MTOKEN').value;
                     const yearFrom = Number(
                         document.querySelector("[name='donemBasYil']").value
@@ -1120,7 +1114,6 @@
                     const onePaket = document.querySelector("#onePaket").checked;
                     const declType = document.querySelector("input[type=radio][name='declType']:checked").value;
                     const Paket = new JSZip();
-                    const exp = document.querySelector('#Exp').checked;
                     const vergiAd = await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                         "headers": {
                             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -1236,15 +1229,16 @@
                             const decMonth = xml.querySelector('ay')?.textContent
                             const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
                             const decType = dec.querySelector('td:nth-child(11)').textContent;
-                            if (!onePaket){
-                                const zip = new JSZip()
-                                zip.file(xmlName + '.xml' , blob)
-                                const output = await zip.generateAsync({type:"blob"})
-                                download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`, output)
-                                sleep(100)
-                            } else {
-                                Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
-                            }
+                            if (dl){
+                                if (!onePaket){
+                                    const zip = new JSZip()
+                                    zip.file(xmlName + '.xml' , blob)
+                                    const output = await zip.generateAsync({type:"blob"})
+                                    download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`, output)
+                                    sleep(100)
+                                } else {
+                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
+                                }}
                         } else {
                             const zip = new JSZip()
                             try {
@@ -1264,15 +1258,16 @@
                                     const decMonth = xml.querySelector('ay')?.textContent
                                     const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
                                     const decType = dec.querySelector('td:nth-child(11)').textContent;
-                                    if (!onePaket){
-                                        const output = await zip.generateAsync({type:"blob"})
-                                        download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`,output)
-                                        sleep(100)
-                                    } else {
-                                        const decBlob = new Blob([data],{type: 'text/plain'})
-                                        Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
+                                    if (dl){
+                                        if (!onePaket){
+                                            const output = await zip.generateAsync({type:"blob"})
+                                            download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`,output)
+                                            sleep(100)
+                                        } else {
+                                            const decBlob = new Blob([data],{type: 'text/plain'})
+                                            Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
+                                        }
                                     }
-
                                 }
                             }catch(error){}
                         }
@@ -2737,7 +2732,7 @@
                                         ) / 100;
                                     }
                                     let td = document.createElement("td");
-                                    td.textContent = Math.round(sum * 100) / 100;
+                                    td.textContent = String(Math.round(sum * 100) / 100).replace('.',',');
                                     tr.appendChild(td);
                                 }
                                 tbody.appendChild(tr);
@@ -2765,7 +2760,7 @@
                         }
 
                     }
-                    if (onePaket){
+                    if (onePaket && dl){
                         const blob = await Paket.generateAsync({type:"blob"})
                         download(vergiNo + ' - ' + vergiAd + '.zip',blob)
                     }
