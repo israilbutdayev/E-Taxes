@@ -1274,6 +1274,9 @@
 
                         if (exp) {
                             let XMLDoc = xml;
+                            if (xml.querySelector('beyanname').attributes['kodVer'].value!=='VAT_1'){
+                                continue
+                            }
                             function getElement(nodeValue, parent = 'beyanname', returnNode = "deyer", nodeName = "gosterici") {
                                 if (Number(XMLDoc.querySelector("yil")) < 2020 && returnNode === "deyer") {
                                     returnNode = "meblag";
