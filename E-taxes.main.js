@@ -161,40 +161,39 @@
                 document.querySelector("#totalPrice").value = roundToTwo(roundToFour(total16()));
             }
             await sleep(500)
-            for (let i = 0; i < 100; i++){
-                try {
-                    [...document.querySelectorAll("#data_form table > tbody > tr")].forEach(tr=>{
-                        tr.querySelector("td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
-                        tr.querySelector("td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
-                        tr.querySelector("td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
-                    })
-                    document.querySelector("#addRow").addEventListener('click', async (e)=>{
-                        await sleep(10)
-                        document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
-                        document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
-                        document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
-                    })
-                    break
-                } catch(error){
-                }
-            }
-
-            async function handleChange (e) {
-                await sleep(10)
-                const tr = e.target.parentNode.parentNode
-                const value = tr.querySelector('td:nth-child(11)>input').value
-                if (Number(tr.querySelector('td:nth-child(13)>input').value) !=0 ){
-                    tr.querySelector('td:nth-child(13)>input').value = value
-                } else if (Number(tr.querySelector('td:nth-child(14)>input').value) !=0 ){
-                    tr.querySelector('td:nth-child(14)>input').value = value;
-                } else if (Number(tr.querySelector('td:nth-child(15)>input').value) !=0 ){
-                    tr.querySelector('td:nth-child(15)>input').value = value
-                }else {
-                    tr.querySelector('td:nth-child(12)>input').value = value
-                    tr.querySelector('td:nth-child(16)>input').value = Math.round(value*0.18*10000)/10000
-                }
-                // console.log(e)
-            }
+//             for (let i = 0; i < 100; i++){
+//                 try {
+//                     [...document.querySelectorAll("#data_form table > tbody > tr")].forEach(tr=>{
+//                         tr.querySelector("td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
+//                         tr.querySelector("td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
+//                         tr.querySelector("td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
+//                     })
+//                     document.querySelector("#addRow").addEventListener('click', async (e)=>{
+//                         await sleep(10)
+//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
+//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
+//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
+//                     })
+//                     break
+//                 } catch(error){
+//                 }
+//             }
+//             async function handleChange (e) {
+//                 await sleep(10)
+//                 const tr = e.target.parentNode.parentNode
+//                 const value = tr.querySelector('td:nth-child(11)>input').value
+//                 if (Number(tr.querySelector('td:nth-child(13)>input').value) !=0 ){
+//                     tr.querySelector('td:nth-child(13)>input').value = value
+//                 } else if (Number(tr.querySelector('td:nth-child(14)>input').value) !=0 ){
+//                     tr.querySelector('td:nth-child(14)>input').value = value;
+//                 } else if (Number(tr.querySelector('td:nth-child(15)>input').value) !=0 ){
+//                     tr.querySelector('td:nth-child(15)>input').value = value
+//                 }else {
+//                     tr.querySelector('td:nth-child(12)>input').value = value
+//                     tr.querySelector('td:nth-child(16)>input').value = Math.round(value*0.18*10000)/10000
+//                 }
+//                 // console.log(e)
+//             }
             async function firstPageEvent(){
                 if (document.querySelector('div#page2')){
                     document.querySelector('div#page2').style.display = 'none'
