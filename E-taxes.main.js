@@ -178,6 +178,7 @@
 //                 } catch(error){
 //                 }
 //             }
+
 //             async function handleChange (e) {
 //                 await sleep(10)
 //                 const tr = e.target.parentNode.parentNode
@@ -1192,7 +1193,7 @@
                         const time = parts[7]
                         let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
                         let blob;
-                        if (pckg){
+                        if (pckg && new Blob([pckg].length >= 1024 )){
                             blob = pckg //new Blob([pckg], {type: 'text/plain'});
                         } else {
                             url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
@@ -3100,7 +3101,7 @@
         } else {
             let responses = await Promise.allSettled([].map.call(lists,async x=>{
                 let response = await localforage.getItem(x.oid)
-                if (response){
+                if (response && new Blob([response]).length >= 4092){
                     return Promise.resolve(response)
                 } else {return (fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
                     'headers': {
@@ -3122,7 +3123,7 @@
                     localforage.setItem(x.oid,resp)
                     return resp;
                 })
-                               )}})).then(responses=>Promise.allSettled([].map.call(responses,response=>{
+                )}})).then(responses=>Promise.allSettled([].map.call(responses,response=>{
                 try {
                     //console.log(response.value)
                     return JSON.parse(response.value)
