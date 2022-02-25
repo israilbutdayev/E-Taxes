@@ -161,40 +161,40 @@
                 document.querySelector("#totalPrice").value = roundToTwo(roundToFour(total16()));
             }
             await sleep(500)
-//             for (let i = 0; i < 100; i++){
-//                 try {
-//                     [...document.querySelectorAll("#data_form table > tbody > tr")].forEach(tr=>{
-//                         tr.querySelector("td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
-//                         tr.querySelector("td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
-//                         tr.querySelector("td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
-//                     })
-//                     document.querySelector("#addRow").addEventListener('click', async (e)=>{
-//                         await sleep(10)
-//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
-//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
-//                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
-//                     })
-//                     break
-//                 } catch(error){
-//                 }
-//             }
+            //             for (let i = 0; i < 100; i++){
+            //                 try {
+            //                     [...document.querySelectorAll("#data_form table > tbody > tr")].forEach(tr=>{
+            //                         tr.querySelector("td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
+            //                         tr.querySelector("td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
+            //                         tr.querySelector("td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
+            //                     })
+            //                     document.querySelector("#addRow").addEventListener('click', async (e)=>{
+            //                         await sleep(10)
+            //                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(6) > input").addEventListener('change', (e)=>handleChange(e))
+            //                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(7) > input").addEventListener('change', (e)=>handleChange(e))
+            //                         document.querySelector("#data_form table > tbody > tr:last-child > td:nth-child(10) > input").addEventListener('change', (e)=>handleChange(e))
+            //                     })
+            //                     break
+            //                 } catch(error){
+            //                 }
+            //             }
 
-//             async function handleChange (e) {
-//                 await sleep(10)
-//                 const tr = e.target.parentNode.parentNode
-//                 const value = tr.querySelector('td:nth-child(11)>input').value
-//                 if (Number(tr.querySelector('td:nth-child(13)>input').value) !=0 ){
-//                     tr.querySelector('td:nth-child(13)>input').value = value
-//                 } else if (Number(tr.querySelector('td:nth-child(14)>input').value) !=0 ){
-//                     tr.querySelector('td:nth-child(14)>input').value = value;
-//                 } else if (Number(tr.querySelector('td:nth-child(15)>input').value) !=0 ){
-//                     tr.querySelector('td:nth-child(15)>input').value = value
-//                 }else {
-//                     tr.querySelector('td:nth-child(12)>input').value = value
-//                     tr.querySelector('td:nth-child(16)>input').value = Math.round(value*0.18*10000)/10000
-//                 }
-//                 // console.log(e)
-//             }
+            //             async function handleChange (e) {
+            //                 await sleep(10)
+            //                 const tr = e.target.parentNode.parentNode
+            //                 const value = tr.querySelector('td:nth-child(11)>input').value
+            //                 if (Number(tr.querySelector('td:nth-child(13)>input').value) !=0 ){
+            //                     tr.querySelector('td:nth-child(13)>input').value = value
+            //                 } else if (Number(tr.querySelector('td:nth-child(14)>input').value) !=0 ){
+            //                     tr.querySelector('td:nth-child(14)>input').value = value;
+            //                 } else if (Number(tr.querySelector('td:nth-child(15)>input').value) !=0 ){
+            //                     tr.querySelector('td:nth-child(15)>input').value = value
+            //                 }else {
+            //                     tr.querySelector('td:nth-child(12)>input').value = value
+            //                     tr.querySelector('td:nth-child(16)>input').value = Math.round(value*0.18*10000)/10000
+            //                 }
+            //                 // console.log(e)
+            //             }
             async function firstPageEvent(){
                 if (document.querySelector('div#page2')){
                     document.querySelector('div#page2').style.display = 'none'
@@ -565,6 +565,12 @@
                 selectAllButton.appendChild(b)
                 selectAllButton.appendChild(document.createTextNode('Hamısını seçmək'))
             }
+            {
+                const script = document.createElement('script')
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                script.defer = true
+                document.head.appendChild(script)
+            }
             selectAllButton.addEventListener('click',e=>toggle(e))
             let hot;
             append();
@@ -682,6 +688,7 @@
                 const month = document.querySelector("#packageType2").value;
                 //document.querySelector("#filterButton").click();
                 for (let i = 0;i<hot.countRows();i++){
+                    await sleep(500)
                     const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
                     const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
                     const No = ('000000'+hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
@@ -695,6 +702,7 @@
                         continue;
                     }
                     const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
+                    await sleep(500)
                     fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
                         "headers": {
                             "accept": "text/plain, */*; q=0.01",
@@ -714,13 +722,14 @@
                         "mode": "cors",
                         "credentials": "include"
                     }).then(response=>response.json())
-                        .then(response=>{
+                        .then(async response=>{
                         if (response.response.code==='1114'){
                             hot.setDataAtCell(i, 6, response.response.message);
                             return;
                         }
                         const qaimeOid = response.qaimeOid
                         const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
+                        await sleep(500)
                         fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                             "headers": {
                                 "accept": "text/plain, */*; q=0.01",
@@ -740,9 +749,10 @@
                             "mode": "cors",
                             "credentials": "include"
                         }).then(response=>response.json())
-                            .then(response=>{
+                            .then(async response=>{
                             if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
                                 const data = `year=${year}&type=01&vhfSeria=${ser}&month=${month}&vhfNum=${No}`
+                                await sleep(500)
                                 fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                     "headers": {
                                         "accept": "text/plain, */*; q=0.01",
@@ -762,11 +772,12 @@
                                     "mode": "cors",
                                     "credentials": "include"
                                 }).then(response=>response.json())
-                                    .then(response=>{
+                                    .then(async response=>{
                                     const detailOid = response.refundListDTO[0].detailOid
                                     if (Number(amount)>Number(response.refundListDTO[0].umumiEdvsiz)){
                                         hot.setDataAtCell(i, 6, `${response.refundListDTO[0].umumiEdvsiz}. Sətir kodu 308 və 314 seçildikdə Ödənilmiş ümumi dəyər qaimədə ƏDV-yə cəlb edilən dəyərdən çox ola bilməz ${ser} ${No} (ödənilmiş dəyər ${amount}, ƏDV-yə cəlb edilən dəyəri ${response.refundListDTO[0].umumiEdvsiz})`)
                                     } else if(Number(response.refundListDTO[0].odenilmisEdvsiz)!==Number(amount)){
+                                        await sleep(500)
                                         fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
                                             "headers": {
                                                 "accept": "text/plain, */*; q=0.01",
@@ -785,8 +796,9 @@
                                             "method": "POST",
                                             "mode": "cors",
                                             "credentials": "include"
-                                        }).then(()=>{
+                                        }).then(async ()=>{
                                             const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
+                                            await sleep(500)
                                             fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                                 "headers": {
                                                     "accept": "text/plain, */*; q=0.01",
@@ -1193,7 +1205,7 @@
                         const time = parts[7]
                         let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
                         let blob;
-                        if (pckg && new Blob([pckg].length >= 1024 )){
+                        if (pckg && pckg.size >= 1024 ){
                             blob = pckg //new Blob([pckg], {type: 'text/plain'});
                         } else {
                             url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
@@ -1274,7 +1286,7 @@
 
                         if (exp) {
                             let XMLDoc = xml;
-                            if (xml.querySelector('beyanname').attributes['kodVer'].value!=='VAT_1'){
+                            if (XMLDoc.querySelector('beyanname').attributes['kodVer'].value!=='VAT_1'){
                                 continue
                             }
                             function getElement(nodeValue, parent = 'beyanname', returnNode = "deyer", nodeName = "gosterici") {
@@ -2794,11 +2806,11 @@
             fromMonth = 1}
         if (!toMonth){
             toMonth = 12}
-        let requests = []
+        let refunds = []
         for (let year = fromYear;year<=toYear;year++){
             for (let month = (year===fromYear?fromMonth:1);month<=(year===toYear?toMonth:12);month++){
                 const monthStr = ('0'+month).substr(('0'+month).length-2,2)
-                requests.push(fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
+                let request = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
                     "headers": {
                         "accept": "text/plain, */*; q=0.01",
                         "accept-language": "en-US,en;q=0.9",
@@ -2816,137 +2828,98 @@
                     "method": "POST",
                     "mode": "cors",
                     "credentials": "include"})
-                              .then(response=>response.json())
-                              .then(response=>response.declList)
-                              .then(response=>response.filter(x=>(x.declSumTotalEDV!=='') && x.declDate!==''))
-                              .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
-                              .then(response=>fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
-                    "headers": {
-                        "accept": "text/plain, */*; q=0.01",
-                        "accept-language": "en-US,en;q=0.9",
-                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                        "sec-ch-ua-mobile": "?0",
-                        "sec-fetch-dest": "empty",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-requested-with": "XMLHttpRequest"
-                    },
-                    "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                    "referrerPolicy": "strict-origin-when-cross-origin",
-                    "body": `year=${year}&type=01&month=${monthStr}&declOid=${response.declOid}&state=all`,
-                    "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
-                }).catch(()=>{}))
-                              .catch(()=>{}))}}
-        const refunds = await Promise.allSettled(requests)
-        .then(responses=>responses.filter(response=>response.value))
-        .then(responses=>Promise.allSettled(responses.map(response=>response.value.json())))
-        .then(responses=>responses.map(response=>response.value.refundListDTO))
-        const data = []
-        data.push(['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV'])
-        for (let i = 0;i<=refunds.length-1;i++){
-            for (let j = 0;j<=refunds[i].length-1;j++){
-                try{
-                    const refund = refunds[i][j]
-                    const temp = []
-                    if (refund.qaimeSeria==='Cəmi'){
-                        temp.push('01.' + refunds[i][j-1].donem.substr(4,2) + '.' + refunds[i][j-1].donem.substr(0,4));
-                        temp.push('');
-                        temp.push('');
-                        temp.push(refund.qaimeSeria);
-                        temp.push(refund.qaimeNum);
-                        temp.push(refund.columnCode);
-                        temp.push(refund.toVoen);
-                        temp.push(refund.payerName);
-                        temp.push("'"+refund.umumiEdvsiz.replace(/\./g,','));
-                        temp.push("'"+refund.umumiEdv.replace(/\./g,','));
-                        temp.push("'"+refund.odenilmisEdvsiz.replace(/\./g,','));
-                        temp.push("'"+refund.odenilmisEdv.replace(/\./g,','));
-                    } else {
-                        temp.push('01.' + refunds[i][j].donem.substr(4,2) + '.' + refunds[i][j].donem.substr(0,4));
-                        temp.push(j+1);
-                        temp.push(stringToDate(refund.qaimeDate + '000000').toLocaleDateString("ru"));
-                        temp.push(refund.qaimeSeria);
-                        temp.push(refund.qaimeNum);
-                        temp.push(refund.columnCode);
-                        temp.push(refund.toVoen);
-                        temp.push(refund.payerName);
-                        temp.push(refund.umumiEdvsiz.replace(/\./g,','));
-                        temp.push(refund.umumiEdv.replace(/\./g,','));
-                        temp.push(refund.odenilmisEdvsiz.replace(/\./g,','));
-                        temp.push(refund.odenilmisEdv.replace(/\./g,','));
+                .then(response=>response.json())
+                .then(response=>response.declList)
+                .then(response=>response.filter(x=>(x.declSumTotalEDV!=='') && x.declDate!==''))
+                .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
+                .catch()
+                if (request?.declOid){
+                    let response = await localforage.getItem(request.declOid)
+                    if (!response || new Blob([response]).size < 4092){
+                        response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+                            "headers": {
+                                "accept": "text/plain, */*; q=0.01",
+                                "accept-language": "en-US,en;q=0.9",
+                                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                "sec-ch-ua-mobile": "?0",
+                                "sec-fetch-dest": "empty",
+                                "sec-fetch-mode": "cors",
+                                "sec-fetch-site": "same-origin",
+                                "x-requested-with": "XMLHttpRequest"
+                            },
+                            "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                            "referrerPolicy": "strict-origin-when-cross-origin",
+                            "body": `year=${year}&type=01&month=${monthStr}&declOid=${request.declOid}&state=all`,
+                            "method": "POST",
+                            "mode": "cors",
+                            "credentials": "include"
+                        }).then(response=>response.text()).catch()
+                        localforage.setItem(request.declOid, response)
                     }
-                    data.push(temp)
-                } catch {
-                    continue}}
+                    refunds.push(response)
+                }
+            }}
+        const th = ['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
+        const table = document.createElement('table')
+        const thead = document.createElement('thead')
+        table.appendChild(thead)
+        let tr = thead.insertRow()
+        th.forEach(x=>{
+            let th = document.createElement('th')
+            th.innerHTML = x
+            tr.appendChild(th)
+        })
+        tr = thead.insertRow()
+        for (let x=1;x<=th.length;x++){
+            let th = document.createElement('th')
+            th.innerHTML = "'" + x
+            tr.appendChild(th)
         }
+        const tbody = document.createElement('tbody')
+        table.appendChild(tbody)
+        for (let i = 0;i < refunds.length; i++){
+            let refundlist = JSON.parse(refunds[i])?.refundListDTO
+            for (let j = 0; j<=refundlist.length-1; j++){
+                try{
+                    const refund = refundlist[j]
+                    let row = tbody.insertRow()
+                    if (refund.qaimeSeria==='Cəmi'){
+                        row.insertCell().innerHTML = '01.' + refundlist[j-1].donem.substr(4,2) + '.' + refundlist[j-1].donem.substr(0,4);
+                        row.insertCell().innerHTML = '';
+                        row.insertCell().innerHTML = '';
+                        row.insertCell().innerHTML = refund.qaimeSeria;
+                        row.insertCell().innerHTML = refund.qaimeNum;
+                        row.insertCell().innerHTML = refund.columnCode;
+                        row.insertCell().innerHTML = refund.toVoen;
+                        row.insertCell().innerHTML = refund.payerName;
+                        row.insertCell().innerHTML = "'"+refund.umumiEdvsiz.replace(/\./g,',');
+                        row.insertCell().innerHTML = "'"+refund.umumiEdv.replace(/\./g,',');
+                        row.insertCell().innerHTML = "'"+refund.odenilmisEdvsiz.replace(/\./g,',');
+                        row.insertCell().innerHTML = "'"+refund.odenilmisEdv.replace(/\./g,',');
+                    } else {
+                        row.insertCell().innerHTML = '01.' + refundlist[j].donem.substr(4,2) + '.' + refundlist[j].donem.substr(0,4);
+                        row.insertCell().innerHTML = j+1;
+                        row.insertCell().innerHTML = stringToDate(refund.qaimeDate + '000000').toLocaleDateString("ru");
+                        row.insertCell().innerHTML = refund.qaimeSeria;
+                        row.insertCell().innerHTML = refund.qaimeNum;
+                        row.insertCell().innerHTML = refund.columnCode;
+                        row.insertCell().innerHTML = refund.toVoen;
+                        row.insertCell().innerHTML = refund.payerName;
+                        row.insertCell().innerHTML = refund.umumiEdvsiz.replace(/\./g,',');
+                        row.insertCell().innerHTML = refund.umumiEdv.replace(/\./g,',');
+                        row.insertCell().innerHTML = refund.odenilmisEdvsiz.replace(/\./g,',');
+                        row.insertCell().innerHTML = refund.odenilmisEdv.replace(/\./g,',');
+                    }
+                } catch {
+                    continue}
+            }}
         let newTab = window.open()
         sleep(100)
-        const table = document.createElement('div')
         table.id = 'refund'
         newTab.document.body.appendChild(table)
-        {
-            const css = document.createElement('link')
-            css.rel='stylesheet'
-            css.href = 'https://cdn.jsdelivr.net/npm/handsontable@9.0.2/dist/handsontable.full.min.css'
-            newTab.document.head.appendChild(css)
-        }
-        const hot = new Handsontable(table, {
-            //startCols:12,
-            copyPaste: true,
-            copyPaste: {
-                columnsLimit: 25,
-                rowsLimit: 50000,
-                pasteMode: 'shift_down',
-                uiContainer: document.body,
-            },
-            data:data,
-            //rowsLimit: 100,
-            //startRows:10,
-            //minRows:5,
-            //minSpareRows:1,
-            rowHeaders: true,
-            //colWidths:[100,100,100,100,100,100,1000],
-            autoWrapRow:true,
-            wordWrap:false,
-            autoWrapColumn:true,
-            autoWrapRow:true,
-            dropdownMenu: true,
-            filters: true,
-            manualColumnResize: true,
-            colHeaders: true,
-            columns:[{
-                type:'text',
-            },{
-                type:'text',
-            },{},{
-                type:'text',
-            },{
-                type:'text',
-            },{
-                type:'text',
-            },{
-                type:'text',
-            },{
-                type:'text',
-            },{
-                type:'text',
-            },{
-                type:'numeric',
-            },{
-                type:'numeric',
-            },{
-                type:'numeric',
-            },{
-                type:'numeric',
-            }],
-            colHeight:'auto',
-            licenseKey: 'non-commercial-and-evaluation',
-        });
-        //table.style.borderCollapse = 'collapse'
-        //newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
+        table.style.borderCollapse = 'collapse'
+        newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
     }
     async function printList(){
         let popUpsBlocked = false
@@ -3007,6 +2980,7 @@
         const lists = []
 
         for (let page = 1;page<=500;page++){
+            sleep(1000)
             const response = await fetch(`https://qaime.e-taxes.gov.az/service/eqaime.${pages[currentPage][0]}`, {
                 "headers": {
                     "accept": "text/plain, */*; q=0.01",
@@ -3099,46 +3073,52 @@
             table.style.borderCollapse = 'collapse'
             newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
         } else {
-            let responses = await Promise.allSettled([].map.call(lists,async x=>{
+            let responses = []
+            for (let j = 0; j < lists.length; j++){
+                let x = lists[j]
                 let response = await localforage.getItem(x.oid)
-                if (response && new Blob([response]).length >= 4092){
-                    return Promise.resolve(response)
-                } else {return (fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
-                    'headers': {
-                        'accept': 'text/plain, */*; q=0.01',
-                        'accept-language': 'en-US,en;q=0.9',
-                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'sec-ch-ua': '\'Google Chrome\';v=\'87\', \' Not;A Brand\';v=\'99\', \'Chromium\';v=\'87\'',
-                        'sec-ch-ua-mobile': '?0',
-                        'sec-fetch-dest': 'empty',
-                        'sec-fetch-mode': 'cors',
-                        'sec-fetch-site': 'same-origin',
-                        'x-requested-with': 'XMLHttpRequest'
-                    },
-                    'body': `docOidList%5B%5D=${x.oid}`,
-                    'method': 'POST',
-                    'mode': 'cors',
-                    'credentials': 'include'
-                }).then(res=>res.text()).then(resp=>{
-                    localforage.setItem(x.oid,resp)
-                    return resp;
-                })
-                )}})).then(responses=>Promise.allSettled([].map.call(responses,response=>{
-                try {
-                    //console.log(response.value)
-                    return JSON.parse(response.value)
-                } catch (error){
-                    //console.log(JSON.parse(response.value))
-                    return response.value
+                if (response && new Blob([response]).size >= 4092){
+                    responses.push(response)
+                } else {
+                    let request = await fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
+                        'headers': {
+                            'accept': 'text/plain, */*; q=0.01',
+                            'accept-language': 'en-US,en;q=0.9',
+                            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'sec-ch-ua': '\'Google Chrome\';v=\'87\', \' Not;A Brand\';v=\'99\', \'Chromium\';v=\'87\'',
+                            'sec-ch-ua-mobile': '?0',
+                            'sec-fetch-dest': 'empty',
+                            'sec-fetch-mode': 'cors',
+                            'sec-fetch-site': 'same-origin',
+                            'x-requested-with': 'XMLHttpRequest'
+                        },
+                        'body': `docOidList%5B%5D=${x.oid}`,
+                        'method': 'POST',
+                        'mode': 'cors',
+                        'credentials': 'include'
+                    })
+                    for (let t = 0; t <= 20 ; t++){
+                        try {
+                            await sleep(t * 1000)
+                            if (request.status!==429){
+                                let response = await request.text()
+                                localforage.setItem(x.oid,response)
+                                responses.push(response)
+                                break;
+                            }
+                        } catch (error){
+                            //console.log(error)
+                        }
+                    }
                 }
-            })))
-            .then(responses=>responses.map(response=>response.value))
+            }
             let htmls = []
-            for (let i=0;i<responses.length;i++){
+            for (let i = 0 ; i < responses.length ; i++){
                 try {
-                    let html = new DOMParser().parseFromString(b64DecodeUnicode(responses[i].htmlList[0]),'text/html')
+                    let response = JSON.parse(responses[i])
+                    let html = new DOMParser().parseFromString(b64DecodeUnicode(response.htmlList[0]),'text/html')
                     htmls.push(html)
-                }catch(error){
+                } catch(error) {
                     console.log(error)
                 }
             }
@@ -3246,7 +3226,6 @@
             table.style.borderCollapse = 'collapse'
             newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black}; </style>')
         }
-
     }
     function b64DecodeUnicode (str) {
         /*// Going backwards: from bytestream, to percent-encoding, to original string.*/
@@ -3288,14 +3267,10 @@
         })
     }
 
-    (()=>{
-
-        const requests = []
-
+    (async ()=>{
         const children = document.querySelector("#default-datatable > tbody").children
-
-        for (let i = 0;i<children.length;i++){
-            requests.push(fetch("https://qaime.e-taxes.gov.az/service/eqaime.printQaime", {
+        for (let i = 0; i < children.length; i++){
+            const response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.printQaime", {
                 "headers": {
                     "accept": "text/plain, */*; q=0.01",
                     "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -3314,33 +3289,14 @@
                 "method": "POST",
                 "mode": "cors",
                 "credentials": "include"
-            }))
-        }
-        Promise.allSettled(requests)
-            .then(responses=>Promise.allSettled(responses.map(response=>response.value.json())))
-            .then(responses=>responses.map(response=>b64DecodeUnicode(response.value.htmlList[0])))
-            .then(responses=>responses.forEach(response=>{
+            }).then(response=>response.json())
+            .then(response=>b64DecodeUnicode(response.value.htmlList[0]))
             try {
                 const parsedHtml = new DOMParser().parseFromString(response,'text/html')
                 let filename = parsedHtml.querySelector("span:nth-child(8)").textContent + ' ' + parsedHtml.querySelector("span:nth-child(5)").textContent + ' ' + parsedHtml.querySelector("span:nth-child(7)").textContent + ' ' + parsedHtml.querySelector("body > p:nth-child(4) > span:nth-child(5)").textContent + '.html'
                 filename = filename.replace(/"/g,"''").replace(/\:/,'.')
                 download(filename,new Blob([response],{type: 'text/plain'}))
-
             }catch{}
-        }))
-
-        function b64DecodeUnicode (str) {
-            /*// Going backwards: from bytestream, to percent-encoding, to original string.*/
-            return decodeURIComponent(atob(str).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-        };
-
-        function download(filename, blob) {
-            let element = document.createElement('a');
-            element.href = URL.createObjectURL(blob);
-            element.setAttribute('download', filename);
-            element.click();
         }
     })
 })();
