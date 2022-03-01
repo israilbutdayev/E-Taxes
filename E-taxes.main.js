@@ -2757,7 +2757,9 @@
                                 if (children.length > 0) {
                                     function sorting(i = 0) {
                                         let nodes = [...children].slice(0, children.length-1);
-                                        if (Number(nodes[i].children[0].textContent+nodes[i].children[1].textContent) >= Number(nodes[i+1].children[0].textContent+nodes[i+1].children[1].textContent)) {
+                                        if (Number(nodes[i]?.children.length) === 1) {
+                                            return;
+                                        } else if (Number(nodes[i].children[0].textContent+nodes[i].children[1].textContent) >= Number(nodes[i+1]?.children[0]?.textContent+nodes[i+1]?.children[1]?.textContent)) {
                                             nodes[i + 1].after(nodes[i]);
                                             sorting(i > 0 ? i - 1 : i);
                                         } else if (i < nodes.length-2) {
