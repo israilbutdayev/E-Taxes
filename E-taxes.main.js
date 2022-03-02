@@ -703,7 +703,7 @@
                     }
                     const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
                     await sleep(500)
-                    fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
+                    await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
                         "headers": {
                             "accept": "text/plain, */*; q=0.01",
                             "accept-language": "en-US,en;q=0.9",
@@ -730,7 +730,7 @@
                         const qaimeOid = response.qaimeOid
                         const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
                         await sleep(500)
-                        fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
+                        await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                             "headers": {
                                 "accept": "text/plain, */*; q=0.01",
                                 "accept-language": "en-US,en;q=0.9",
@@ -753,7 +753,7 @@
                             if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
                                 const data = `year=${year}&type=01&vhfSeria=${ser}&month=${month}&vhfNum=${No}`
                                 await sleep(500)
-                                fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+                                await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                     "headers": {
                                         "accept": "text/plain, */*; q=0.01",
                                         "accept-language": "en-US,en;q=0.9",
@@ -778,7 +778,7 @@
                                         hot.setDataAtCell(i, 6, `${response.refundListDTO[0].umumiEdvsiz}. Sətir kodu 308 və 314 seçildikdə Ödənilmiş ümumi dəyər qaimədə ƏDV-yə cəlb edilən dəyərdən çox ola bilməz ${ser} ${No} (ödənilmiş dəyər ${amount}, ƏDV-yə cəlb edilən dəyəri ${response.refundListDTO[0].umumiEdvsiz})`)
                                     } else if(Number(response.refundListDTO[0].odenilmisEdvsiz)!==Number(amount)){
                                         await sleep(500)
-                                        fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
+                                        await fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
                                             "headers": {
                                                 "accept": "text/plain, */*; q=0.01",
                                                 "accept-language": "en-US,en;q=0.9",
@@ -799,7 +799,7 @@
                                         }).then(async ()=>{
                                             const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
                                             await sleep(500)
-                                            fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
+                                            await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                                 "headers": {
                                                     "accept": "text/plain, */*; q=0.01",
                                                     "accept-language": "en-US,en;q=0.9",
@@ -982,7 +982,7 @@
                             continue
                         }
 
-                        fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
+                        await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                             "headers": {
                                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                                 "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -1001,7 +1001,7 @@
                             "referrerPolicy": "strict-origin-when-cross-origin",
                             "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${taxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${payment.taxId}&edhOperationAmount=${payment.amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(payment.description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
                         }
-                             );
+                                   );
                         hot.setDataAtCell(i, 4, 'Yazıldı.')
                     }
 
@@ -2757,7 +2757,7 @@
                                 if (children.length > 0) {
                                     function sorting(i = 0) {
                                         let nodes = [...children].slice(0, children.length-1);
-                                        if (Number(nodes[i]?.children.length) === 1) {
+                                        if (nodes[i]?.children.length === 1) {
                                             return;
                                         } else if (Number(nodes[i].children[0].textContent+nodes[i].children[1].textContent) >= Number(nodes[i+1]?.children[0]?.textContent+nodes[i+1]?.children[1]?.textContent)) {
                                             nodes[i + 1].after(nodes[i]);
