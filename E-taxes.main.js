@@ -13,10 +13,11 @@
 // @grant        none
 // ==/UserScript==
 
-(async function() {
+const func = async () => {
     'use strict';
     window.addEventListener('load', async function() {
         if (window.location.href.includes('PG_QAIME_1')){
+            debugger
             const script = document.createElement('script')
             script.src = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.js'
             script.defer = true
@@ -76,8 +77,7 @@
                 }
             }
             let hot;
-            append();
-            async function append(count=100){
+            for (let a = 0; a <= 1000; a++){
                 try{
                     firstPageButton.addEventListener('click',firstPageEvent);
                     uploadButton.addEventListener('click',uploadData);
@@ -90,14 +90,14 @@
                         if (docoid){copyDocument()}
                     } catch(error){
                         sessionStorage.removeItem('docoidToCopy')}
+                    break;
                 } catch(error) {
                     //console.log(error)
-                    if (count>0){
-                        await new Promise((res,rej)=>{setTimeout(()=>{res()},100)})
-                        append(count-1)
-                    }
-                }};
+                    await sleep(100)
+                }
+            };
             async function copyDocument (){
+                debugger;
                 document.querySelector("#sidebarMenu a[href='/doFlow?doc=PG_QAIME_1']")?.addEventListener('click',()=>{sessionStorage.removeItem("docoidToCopy")})
                 const html = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.printQaime", {
                     "headers": {
@@ -121,7 +121,7 @@
                 .then(response=>new DOMParser().parseFromString(response,'text/html'))
                 if (html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent && html.querySelector('body > p:nth-child(4) > span:nth-child(5)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent){
                     sessionStorage.removeItem('docoidToCopy')
-                    return ''
+                    //return ''
                 }
                 document.querySelector("#customerVoen").value = html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent?html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10):html.querySelector('body > p:nth-child(4) > span:nth-child(5)').textContent.substring(0,10)
                 document.querySelector("#getCustomerVoen > i").click()
@@ -395,14 +395,12 @@
             printButton.id = 'printList';
             printButton.className = 'btn btn-xs bg-teal-800 pull-right';
             if (sessionStorage.getItem("docoidToCopy")){sessionStorage.removeItem("docoidToCopy")}
-
             {
                 const i = document.createElement('i');
                 i.className = 'icon-table2 position-left';
                 printButton.appendChild(i)
                 printButton.appendChild(document.createTextNode('Cədvələ çıxart'))
             }
-
             const showInfoButton = document.createElement('button')
             showInfoButton.type = 'button'
             showInfoButton.className = 'btn btn-xs bg-teal-800 pull-right'
@@ -906,8 +904,7 @@
                 div.appendChild(uploadButton);
                 uploadButton.addEventListener('click',handler)
                 let hot;
-                append()
-                async function append(count=1000){
+                for (let a = 0; a <= 1000; a++){
                     try{
                         Handsontable
                         document.body.appendChild(div);
@@ -929,13 +926,11 @@
                             colHeight:'auto',
                             licenseKey: 'non-commercial-and-evaluation',
                         });
+                        break;
                         //document.querySelector("#type-b").appendChild(div);
                     } catch(error) {
                         //console.log(error)
-                        if (count>0){
-                            await new Promise((res,rej)=>{setTimeout(()=>{res()},100)})
-                            append(count-1)
-                        }
+                        await sleep(100)
                     }}
 
 
@@ -3301,4 +3296,5 @@
             }catch{}
         }
     })
-})();
+};
+func();
