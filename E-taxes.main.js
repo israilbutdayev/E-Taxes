@@ -380,6 +380,20 @@ const func = async () => {
             const options = {attributes:true,characterData:true,childList:true,subtree:true}
             observer.observe(document.querySelector("#regContent"),options)
         }
+        if (window.location.href.includes('qaime.e-taxes.gov.az/')){
+            let token = document.cookie.match(/\stoken=(.*?);/)[1]
+            console.log(token)
+            //let data = JSON.stringify({token})
+            //             fetch('http://127.0.0.1:2222/import',{
+            //                 "headers": {
+            //                     "accept": "application/json, */*; q=0.01",
+            //                     "content-type": "application/json; charset=UTF-8"
+            //                 },
+            //                 "body": data,
+            //                 "method": "POST",
+            //                 "mode": "no-cors",
+            //             })
+        }
         if (['getDocList','getAllDocList','getDrafts'].some(x=>window.location.href.includes(x))){
             {
                 const script = document.createElement('script')
@@ -685,22 +699,23 @@ const func = async () => {
                 const year = document.querySelector("#year").value
                 const month = document.querySelector("#packageType2").value;
                 //document.querySelector("#filterButton").click();
+                let timeout = 100;
                 for (let i = 0;i<hot.countRows();i++){
-                    await sleep(500)
+                    await sleep(timeout)
                     const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
                     const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
                     const No = ('000000'+hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
-                    const amount = hot.getSourceDataAtCell(i,4)?.replace(/\,/g,'.').replace(/\s/g,'')
+                    let amount = hot.getSourceDataAtCell(i,4)?.replace(/\,/g,'.').replace(/\s/g,'')
                     const vat = Round(Number(amount)*0.18,2)
                     if (!ser || !No){
                         continue;
                     }
-                    if (ser.length!==4){
+                    if (ser.length!==4 && ser.length!==2){
                         hot.setDataAtCell(i,6, 'Qaimənin Seriyası düzgün deyil');
                         continue;
                     }
                     const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
-                    await sleep(500)
+                    await sleep(timeout)
                     await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
                         "headers": {
                             "accept": "text/plain, */*; q=0.01",
@@ -726,8 +741,11 @@ const func = async () => {
                             return;
                         }
                         const qaimeOid = response.qaimeOid
+                        if (Number(response.umumiEdv) <= vat) {
+                            amount = Math.min(response.umumiEdvsiz, amount)
+                        }
                         const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
-                        await sleep(500)
+                        await sleep(timeout)
                         await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                             "headers": {
                                 "accept": "text/plain, */*; q=0.01",
@@ -750,7 +768,7 @@ const func = async () => {
                             .then(async response=>{
                             if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
                                 const data = `year=${year}&type=01&vhfSeria=${ser}&month=${month}&vhfNum=${No}`
-                                await sleep(500)
+                                await sleep(timeout)
                                 await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                     "headers": {
                                         "accept": "text/plain, */*; q=0.01",
@@ -775,7 +793,7 @@ const func = async () => {
                                     if (Number(amount)>Number(response.refundListDTO[0].umumiEdvsiz)){
                                         hot.setDataAtCell(i, 6, `${response.refundListDTO[0].umumiEdvsiz}. Sətir kodu 308 və 314 seçildikdə Ödənilmiş ümumi dəyər qaimədə ƏDV-yə cəlb edilən dəyərdən çox ola bilməz ${ser} ${No} (ödənilmiş dəyər ${amount}, ƏDV-yə cəlb edilən dəyəri ${response.refundListDTO[0].umumiEdvsiz})`)
                                     } else if(Number(response.refundListDTO[0].odenilmisEdvsiz)!==Number(amount)){
-                                        await sleep(500)
+                                        await sleep(timeout)
                                         await fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
                                             "headers": {
                                                 "accept": "text/plain, */*; q=0.01",
@@ -796,7 +814,7 @@ const func = async () => {
                                             "credentials": "include"
                                         }).then(async ()=>{
                                             const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
-                                            await sleep(500)
+                                            await sleep(timeout)
                                             await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                                 "headers": {
                                                     "accept": "text/plain, */*; q=0.01",
@@ -900,7 +918,7 @@ const func = async () => {
                 div.style.flexDirection = 'column';
                 const container = document.createElement('div')
                 container.id = 'container'
-                div.appendChild(container)
+                div.appendChild(container);
                 div.appendChild(uploadButton);
                 uploadButton.addEventListener('click',handler)
                 let hot;
@@ -1090,33 +1108,7 @@ const func = async () => {
                     const monthTo = Number(
                         document.querySelector("[name='donemBitAy']").value
                     );
-
-                    const doc = new DOMParser().parseFromString(
-                        await fetch('https://www.e-taxes.gov.az/vedop2/ebyn/dispatch', {
-                            headers: {
-                                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                'accept-language': 'en-US,en;q=0.9',
-                                'cache-control': 'max-age=0',
-                                'content-type': 'application/x-www-form-urlencoded',
-                                'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                'sec-ch-ua-mobile': '?0',
-                                'sec-fetch-dest': 'document',
-                                'sec-fetch-mode': 'navigate',
-                                'sec-fetch-site': 'same-origin',
-                                'sec-fetch-user': '?1',
-                                'upgrade-insecure-requests': '1',
-                            },
-                            referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                            referrerPolicy: 'strict-origin-when-cross-origin',
-                            body: `cmd=BEYANNAMESORGU&TOKEN=${token}`,
-                            method: 'POST',
-                            mode: 'cors',
-                            credentials: 'include',
-                        }).then((response) => response.text()).catch(),
-                        'text/html'
-                    );
-
-                    const vergiNo = doc.querySelector('[name="vergiNo"]').value;
+                    const vergiNo = document.querySelector('[name="vergiNo"]').value;
                     const decType = document.querySelector("[name='beyannameTanim']").value
                     const onePaket = document.querySelector("#onePaket").checked;
                     const declType = document.querySelector("input[type=radio][name='declType']:checked").value;
@@ -1228,7 +1220,7 @@ const func = async () => {
                             localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
                         }
                         let xml;
-                        if (dec.querySelector('td:nth-child(11)').textContent==='Kameral'){
+                        if (dec.querySelector('td:nth-child(11)').textContent==='Kameral' || dec.querySelector('td:nth-child(11)').textContent==='Analoji'){
                             const zip = new JSZip()
                             const text = await new Response(blob).text()
                             xml = new DOMParser().parseFromString(text,'text/xml')
