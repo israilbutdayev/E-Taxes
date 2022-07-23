@@ -895,6 +895,23 @@ const func = async () => {
                     return new Date(year, month - 1, day, hour, minute, second).toLocaleDateString("ru");
                 }
             }
+            if (document.querySelector("#waitingOperationOidZd")) {
+                let table = document.querySelector("#tblPrint > table > tbody > tr:nth-child(6) > td > table")
+                let row = table.insertRow()
+                for (let i = 0; i < 9; i++){
+                    let cell = row.insertCell()
+                    if (i === 6) {
+                        let sum = 0;
+                        for ( let j = 1; j < table.children[0].children.length - 3; j ++){
+                            let rw = table.children[0].children[j]
+                            sum += Number(rw.children[6].textContent)
+                        }
+                        cell.align = 'right'
+                        cell.textContent = sum
+                    }
+                }
+            }
+
             if (document.querySelector('#edhOperationAmount')){
                 const script = document.createElement('script')
                 script.src = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.js'
@@ -2960,7 +2977,7 @@ const func = async () => {
         const filterType = document.querySelector("#docType").value;
         const filterFromDate = document.querySelector("#startDate").value;
         const filterToDate = document.querySelector("#endDate").value;
-        const filterSer = document.querySelector("#vhfSeria").value;
+        const filterSer = document.querySelector("#vhfSeria").value.toUpperCase();
         const filterNumber = document.querySelector("#vhfNum").value;
         if (!filterFromDate){
             alert('Başlanğıc tarixi mütləq qeyd edilməlidir!!!')
