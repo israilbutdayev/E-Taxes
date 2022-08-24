@@ -700,11 +700,11 @@ const func = async () => {
                 const month = document.querySelector("#packageType2").value;
                 //document.querySelector("#filterButton").click();
                 let timeout = 100;
-                for (let i = 0;i<hot.countRows();i++){
+                for (let i = 0; i < hot.countRows(); i++){
                     await sleep(timeout)
                     const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
                     const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
-                    const No = ('000000'+hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
+                    const No = ('000000' + hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
                     let amount = hot.getSourceDataAtCell(i,4)?.replace(/\,/g,'.').replace(/\s/g,'')
                     const vat = Round(Number(amount)*0.18,2)
                     if (!ser || !No){
@@ -714,6 +714,153 @@ const func = async () => {
                         hot.setDataAtCell(i,6, 'Qaimənin Seriyası düzgün deyil');
                         continue;
                     }
+                    //uploadRefundData(ser, No, amount, vat)
+                    //continue
+                    async function uploadRefundData(ser, No, amount, vat){
+                        const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
+                        fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
+                            "headers": {
+                                "accept": "text/plain, */*; q=0.01",
+                                "accept-language": "en-US,en;q=0.9",
+                                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                "sec-ch-ua-mobile": "?0",
+                                "sec-fetch-dest": "empty",
+                                "sec-fetch-mode": "cors",
+                                "sec-fetch-site": "same-origin",
+                                "x-requested-with": "XMLHttpRequest"
+                            },
+                            "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                            "referrerPolicy": "strict-origin-when-cross-origin",
+                            "body": data,
+                            "method": "POST",
+                            "mode": "cors",
+                            "credentials": "include"
+                        }).then(response=>response.json())
+                            .then(async response=>{
+                            if (response.response.code==='1114'){
+                                hot.setDataAtCell(i, 6, response.response.message);
+                                return;
+                            }
+                            const qaimeOid = response.qaimeOid
+                            if (Number(response.umumiEdv) <= vat) {
+                                amount = Math.min(response.umumiEdvsiz, amount)
+                            }
+                            const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
+                            fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
+                                "headers": {
+                                    "accept": "text/plain, */*; q=0.01",
+                                    "accept-language": "en-US,en;q=0.9",
+                                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                    "sec-ch-ua-mobile": "?0",
+                                    "sec-fetch-dest": "empty",
+                                    "sec-fetch-mode": "cors",
+                                    "sec-fetch-site": "same-origin",
+                                    "x-requested-with": "XMLHttpRequest"
+                                },
+                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                                "referrerPolicy": "strict-origin-when-cross-origin",
+                                "body": data,
+                                "method": "POST",
+                                "mode": "cors",
+                                "credentials": "include"
+                            }).then(response=>response.json())
+                                .then(async response=>{
+                                if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
+                                    const data = `year=${year}&type=01&vhfSeria=${ser}&month=${month}&vhfNum=${No}`
+                                    fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+                                        "headers": {
+                                            "accept": "text/plain, */*; q=0.01",
+                                            "accept-language": "en-US,en;q=0.9",
+                                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                            "sec-ch-ua-mobile": "?0",
+                                            "sec-fetch-dest": "empty",
+                                            "sec-fetch-mode": "cors",
+                                            "sec-fetch-site": "same-origin",
+                                            "x-requested-with": "XMLHttpRequest"
+                                        },
+                                        "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                                        "referrerPolicy": "strict-origin-when-cross-origin",
+                                        "body": data,
+                                        "method": "POST",
+                                        "mode": "cors",
+                                        "credentials": "include"
+                                    }).then(response=>response.json())
+                                        .then(async response=> {
+                                        const detailOid = response.refundListDTO[0].detailOid
+                                        if (Number(amount)>Number(response.refundListDTO[0].umumiEdvsiz)){
+                                            hot.setDataAtCell(i, 6, `${response.refundListDTO[0].umumiEdvsiz}. Sətir kodu 308 və 314 seçildikdə Ödənilmiş ümumi dəyər qaimədə ƏDV-yə cəlb edilən dəyərdən çox ola bilməz ${ser} ${No} (ödənilmiş dəyər ${amount}, ƏDV-yə cəlb edilən dəyəri ${response.refundListDTO[0].umumiEdvsiz})`)
+                                        } else if(Number(response.refundListDTO[0].odenilmisEdvsiz)!==Number(amount)){
+                                            fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
+                                                "headers": {
+                                                    "accept": "text/plain, */*; q=0.01",
+                                                    "accept-language": "en-US,en;q=0.9",
+                                                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                                    "sec-ch-ua-mobile": "?0",
+                                                    "sec-fetch-dest": "empty",
+                                                    "sec-fetch-mode": "cors",
+                                                    "sec-fetch-site": "same-origin",
+                                                    "x-requested-with": "XMLHttpRequest"
+                                                },
+                                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                                                "referrerPolicy": "strict-origin-when-cross-origin",
+                                                "body": `evezDetailOid%5B%5D=${detailOid}`,
+                                                "method": "POST",
+                                                "mode": "cors",
+                                                "credentials": "include"
+                                            }).then(async ()=>{
+                                                const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
+                                                fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
+                                                    "headers": {
+                                                        "accept": "text/plain, */*; q=0.01",
+                                                        "accept-language": "en-US,en;q=0.9",
+                                                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                                        "sec-ch-ua-mobile": "?0",
+                                                        "sec-fetch-dest": "empty",
+                                                        "sec-fetch-mode": "cors",
+                                                        "sec-fetch-site": "same-origin",
+                                                        "x-requested-with": "XMLHttpRequest"
+                                                    },
+                                                    "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                                                    "referrerPolicy": "strict-origin-when-cross-origin",
+                                                    "body": data,
+                                                    "method": "POST",
+                                                    "mode": "cors",
+                                                    "credentials": "include"
+                                                }).then(response=>response.json())
+                                                    .then(response=>{
+                                                    if (response.response.code==='1114'){
+                                                        hot.setDataAtCell(i, 6, response.response.message)
+                                                    } else if(response.response.code==='0'){
+                                                        hot.setDataAtCell(i, 6, 'Yazıldı')
+                                                    }
+                                                })
+                                            })
+                                        } else {
+                                            hot.setDataAtCell(i, 6, 'Əvəzləşmə artıq yazılıb!')
+                                        }
+                                    })
+                                }else if (response.response.code==='1114'){
+                                    if(response.response.message.includes('ƏDV-yə cəlb edilən dəyəri')){
+                                        hot.setDataAtCell(i, 6, `${response.response.message.match(/ƏDV-yə cəlb edilən dəyəri (.*)\)/)[1]}. Sətir kodu 308 və 314 seçildikdə Ödənilmiş ümumi dəyər qaimədə ƏDV-yə cəlb edilən dəyərdən çox ola bilməz ${ser} ${No} (ödənilmiş dəyər ${amount}, ƏDV-yə cəlb edilən dəyəri ${response.response.message.match(/ƏDV-yə cəlb edilən dəyəri (.*)\)/)[1]})`)
+                                    } else {
+                                        hot.setDataAtCell(i, 6, response.response.message)}
+                                } else if(response.response.code==='0'){
+                                    hot.setDataAtCell(i, 6, 'Yazıldı')
+                                }
+                            })
+
+                        })
+                        if (!hot.countRows()%10){
+                            //document.querySelector("#filterButton").click();
+                        }
+
+                    }
+
                     const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
                     await sleep(timeout)
                     await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
@@ -907,7 +1054,7 @@ const func = async () => {
                             sum += Number(rw.children[6].textContent)
                         }
                         cell.align = 'right'
-                        cell.textContent = sum
+                        cell.textContent = Round(sum)
                     }
                 }
             }
@@ -2836,7 +2983,7 @@ const func = async () => {
                     "credentials": "include"})
                 .then(response=>response.json())
                 .then(response=>response.declList)
-                .then(response=>response.filter(x=>(x.declSumTotalEDV!=='') && x.declDate!==''))
+                .then(response=>response.filter(x=>(x?.declSumTotalEDV!=='') && (x?.declDate!=='')))
                 .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
                 .catch()
                 if (request?.declOid){
@@ -3244,7 +3391,7 @@ const func = async () => {
         return [...Array(size).keys()].map(i => i + startAt);
     }
 
-    function Round(number,digits=2){
+    function Round(number, digits=2){
         return Math.round(number*10**digits)/10**digits
     }
 
