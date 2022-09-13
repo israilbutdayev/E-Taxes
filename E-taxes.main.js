@@ -1045,27 +1045,42 @@ const func = async () => {
             if (document.querySelector("#waitingOperationOidZd")) {
                 let table = document.querySelector("#tblPrint > table > tbody > tr:nth-child(6) > td > table")
                 let row = table.insertRow()
+                let tbody = table.tBodies[0]
+                for ( let j = 1; j < tbody.rows.length - 1; j++){
+                    tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).addEventListener('change', sumChecked)
+                }
+                function sumChecked () {
+                    let s = 0
+                    for ( let j = 1; j < tbody.rows.length - 1; j++){
+                        if (tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked) {
+                            s += Round(Number(tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
+                        }
+                        tbody.querySelector(`tr:last-child > td:nth-child(2)`).textContent = Round(s)
+                    }}
+
                 for (let i = 0; i < 9; i++){
                     let cell = row.insertCell()
                     if (i === 0) {
                         let checkbox = document.createElement('input')
                         checkbox.type = 'checkbox'
                         cell.appendChild(checkbox)
-                        cell.align = 'center'
+                        cell.style.textAlign = 'center'
                         checkbox.addEventListener('change',(e)=>{
                             let tbody = table.tBodies[0]
-                            for ( let j = 1; j < tbody.children.length - 3; j++){
+                            for ( let j = 1; j < tbody.rows.length - 1; j++){
                                 tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked = e.target.checked
                             }
+                            sumChecked()
                         })
                     }
+                    if (i == 1) {
+                        cell.style.textAlign = 'center'}
                     if (i === 6) {
                         let sum = 0;
-                        for ( let j = 1; j < table.children[0].children.length - 3; j ++){
-                            let rw = table.children[0].children[j]
-                            sum += Number(rw.children[6].textContent)
+                        for ( let j = 1; j < tbody.rows.length - 1; j++){
+                            sum += Round(Number(tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
                         }
-                        cell.align = 'right'
+                        cell.style.textAlign = 'right'
                         cell.textContent = Round(sum)
                     }
                 }
