@@ -1047,6 +1047,18 @@ const func = async () => {
                 let row = table.insertRow()
                 for (let i = 0; i < 9; i++){
                     let cell = row.insertCell()
+                    if (i === 0) {
+                        let checkbox = document.createElement('input')
+                        checkbox.type = 'checkbox'
+                        cell.appendChild(checkbox)
+                        cell.align = 'center'
+                        checkbox.addEventListener('change',(e)=>{
+                            let tbody = table.tBodies[0]
+                            for ( let j = 1; j < tbody.children.length - 3; j++){
+                                tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked = e.target.checked
+                            }
+                        })
+                    }
                     if (i === 6) {
                         let sum = 0;
                         for ( let j = 1; j < table.children[0].children.length - 3; j ++){
@@ -1060,15 +1072,6 @@ const func = async () => {
             }
 
             if (document.querySelector('#edhOperationAmount')){
-                const script = document.createElement('script')
-                script.src = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.js'
-                script.defer = true
-                document.head.appendChild(script)
-                const css = document.createElement('link')
-                css.rel = 'stylesheet'
-                css.type = 'text/css'
-                css.href = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.css'
-                document.head.appendChild(css)
                 const uploadButton = document.createElement('button');
                 uploadButton.type = 'button'
                 uploadButton.id = 'upload'
@@ -1080,53 +1083,92 @@ const func = async () => {
                 div.style.display = 'flex';
                 div.style.alignItems = 'center';
                 div.style.flexDirection = 'column';
-                const container = document.createElement('div')
-                container.id = 'container'
-                div.appendChild(container);
-                div.appendChild(uploadButton);
-                uploadButton.addEventListener('click',handler)
-                let hot;
-                for (let a = 0; a <= 1000; a++){
-                    try{
-                        Handsontable
-                        document.body.appendChild(div);
-                        hot = new Handsontable(container, {
-                            startCols:5,
-                            startRows:10,
-                            minRows:5,
-                            //minSpareRows:1,
-                            rowHeaders: true,
-                            colWidths:[100,100,100,500,200],
-                            autoWrapRow:true,
-                            wordWrap:false,
-                            autoWrapColumn:true,
-                            autoWrapRow:true,
-                            dropdownMenu: true,
-                            filters: true,
-                            colHeaders: ['№','VÖEN','Məbləğ','Təyinat','Nəticə',],
-                            manualColumnResize: true,
-                            colHeight:'auto',
-                            licenseKey: 'non-commercial-and-evaluation',
-                        });
-                        break;
-                        //document.querySelector("#type-b").appendChild(div);
-                    } catch(error) {
-                        //console.log(error)
-                        await sleep(100)
-                    }}
 
+
+
+
+
+
+                ////////////////////////////////////////////////
+
+                let table = document.createElement('table')
+                table.id = 'data'
+                document.body.appendChild(table)
+                let thead = document.createElement('thead')
+                let tbody = document.createElement('tbody')
+                table.appendChild(thead)
+                table.appendChild(tbody)
+                let headers = [{value: '№', id: 'no', width: '50px'}, {value: 'VÖEN', id: 'taxId', width: '100px'}, {value: 'Məbləğ', id: 'amount', width: '75px'},{value: 'Təyinat', id: 'description', width: '550px'},{value: 'Nəticə', id: 'result', width: '150px'}]
+                let thr = document.createElement('tr')
+                thead.appendChild(thr)
+                let style = `border: 1px solid black;`
+                headers.forEach((header, index)=>{
+                    let th = document.createElement('th')
+                    th.textContent = header.value
+                    th.id = header.id
+                    thr.appendChild(th)
+                    th.style = style;
+                    th.style.width = header.width
+                })
+
+                table.style.borderCollapse = 'collapse'
+                table.style.backgroundColor = 'white'
+
+                function createRow (){
+                    let tr = document.createElement('tr')
+                    for (let j = 0; j < headers.length; j++){
+                        let td = document.createElement('td')
+                        td.style = style
+                        td.id = headers[j].id
+                        j !== 4 && (td.contentEditable = true)
+                        tr.appendChild(td)
+                    }
+                    return tr
+                }
+
+                for (let i = 0; i < 10; i++){
+                    let tr = createRow()
+                    tbody.appendChild(tr)
+                }
+
+                table.addEventListener('input', onChange)
+
+                function onChange (e){
+                    let txt = e.target.innerText
+                    let rowIndex = e.target.parentNode.rowIndex
+                    let cellIndex = e.target.cellIndex
+                    // console.log(e)
+                    // console.log(rowIndex)
+                    // console.log(cellIndex)
+                    e.preventDefault();
+                    // e.target.textContent = ''
+                    let rows = txt.split(/\n/)
+                    let lastIndex = rowIndex + rows.length
+                    while (lastIndex > tbody.children.length + 1 ){
+                        let tr = createRow()
+                        tbody.appendChild(tr)
+                    }
+                    for (let r = 0; r < rows.length; r++){
+                        let row = rows[r]
+                        let cols = row.split(/\t/)
+                        for (let c = 0; c < cols.length; c++){
+                            let col = cols[c]
+                            tbody.querySelector(`tr:nth-child(${r + rowIndex}) > td:nth-child(${c + 1 + cellIndex})`).textContent = col
+                        }
+                    }
+                }
+
+                document.body.appendChild(div);
+                div.appendChild(table);
+                div.appendChild(uploadButton);
+                /////////////////////////////////////////////////
+
+
+
+
+                uploadButton.addEventListener('click', handler)
 
                 async function handler (){
-                    const payments = []
-                    for (let i = 0;i<hot.countRows();i++){
-                        if (!hot.getSourceDataAtCell(i,1)) {
-                            continue}
-                        const taxId = hot.getSourceDataAtCell(i,1).replace(/\s/g,'')
-                        const amount = hot.getSourceDataAtCell(i,2).replace(/\,/g,'.').replace(/\s/g,'')
-                        const description = hot.getSourceDataAtCell(i,3)
-                        payments.push({taxId, amount, description})
-                    }
-
                     const token = document.querySelector("#MTOKEN").value
 
                     const doc = new DOMParser().parseFromString(await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
@@ -1146,16 +1188,20 @@ const func = async () => {
                         "body": `cmd=EDVINSERTJSPSRV&TOKEN=${token}`,
                         'method':'POST',
                     }).then(response=>response.text()),'text/html')
+                    for (let i = 0; i < tbody.children.length; i++){
+                        let row = tbody.children[i]
+                        const taxId = row.querySelector('#taxId').textContent.replace(/\s/g,'')
+                        if (!taxId) {
+                            continue}
+                        const amount = row.querySelector('#amount').textContent.replace(/\,/g,'.').replace(/\s/g,'')
+                        const description = row.querySelector('#description').textContent
 
+                        const myTaxId = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(1)").innerText
+                        const taxName = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(2)").innerText
+                        const totalAmount = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(3)").innerText
 
-                    const taxId = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(1)").innerText
-                    const taxName = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(2)").innerText
-                    const totalAmount = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(3)").innerText
-
-                    for (let i = 0;i<payments.length;i++){
-                        const payment= payments[i]
-                        if (Number(payment.amount)>Number(totalAmount)){
-                            hot.setDataAtCell(i, 4, 'Ödənilən məbləğ, sub uçot hesabının qalığından çox ola bilməz !!!')
+                        if (Number(amount) > Number(totalAmount)){
+                            row.querySelector('#result').textContent = 'Ödənilən məbləğ, sub uçot hesabının qalığından çox ola bilməz !!!'
                             continue
                         }
 
@@ -1176,10 +1222,10 @@ const func = async () => {
                             "method":"POST",
                             "referrer": "https://www.e-taxes.gov.az/vedop2/ebyn/dispatch",
                             "referrerPolicy": "strict-origin-when-cross-origin",
-                            "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${taxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${payment.taxId}&edhOperationAmount=${payment.amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(payment.description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
+                            "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${myTaxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${taxId}&edhOperationAmount=${amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
                         }
                                    );
-                        hot.setDataAtCell(i, 4, 'Yazıldı.')
+                        row.querySelector('#result').textContent = 'Yazıldı.'
                     }
 
                 }}
