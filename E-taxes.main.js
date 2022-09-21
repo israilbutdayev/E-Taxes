@@ -19,13 +19,13 @@ const func = async () => {
         if (window.location.href.includes('PG_QAIME_1')){
             debugger
             const script = document.createElement('script')
-            script.src = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.js'
+            script.src = 'https://cdn.jsdelivr.net/npm/handsontable@12.1.2/dist/handsontable.full.min.js'
             script.defer = true
             document.head.appendChild(script)
             const css = document.createElement('link')
             css.rel = 'stylesheet'
             css.type = 'text/css'
-            css.href = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.css'
+            css.href = 'https://cdn.jsdelivr.net/npm/handsontable@12.1.2/dist/handsontable.full.min.css'
             document.head.appendChild(css)
             const uploadButton = document.createElement('button');
             uploadButton.type = 'button'
@@ -543,13 +543,13 @@ const func = async () => {
 
         } else if (window.location.href.includes('PG_REFUND')) {
             const script = document.createElement('script')
-            script.src = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.js'
+            script.src = 'https://cdn.jsdelivr.net/npm/handsontable@12.1.2/dist/handsontable.full.min.js'
             script.defer = true
             document.head.appendChild(script)
             const css = document.createElement('link')
             css.rel = 'stylesheet'
             css.type = 'text/css'
-            css.href = 'https://cdn.jsdelivr.net/npm/handsontable@9.0/dist/handsontable.full.min.css'
+            css.href = 'https://cdn.jsdelivr.net/npm/handsontable@12.1.2/dist/handsontable.full.min.css'
             document.head.appendChild(css)
             const div = document.createElement('div')
             div.id = 'refund'
@@ -1042,48 +1042,107 @@ const func = async () => {
                     return new Date(year, month - 1, day, hour, minute, second).toLocaleDateString("ru");
                 }
             }
+            let tableStyle = `position: relative; top: 150px; width: 50%; border: 1px double #AD422E;`
+            let trStyle = `border: 1px double #AD422E;`
             if (document.querySelector("#waitingOperationOidZd")) {
-                let table = document.querySelector("#tblPrint > table > tbody > tr:nth-child(6) > td > table")
-                let row = table.insertRow()
-                let tbody = table.tBodies[0]
-                for ( let j = 1; j < tbody.rows.length - 1; j++){
-                    tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).addEventListener('change', sumChecked)
-                }
-                function sumChecked () {
-                    let s = 0
-                    for ( let j = 1; j < tbody.rows.length - 1; j++){
-                        if (tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked) {
-                            s += Round(Number(tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
-                        }
-                        tbody.querySelector(`tr:last-child > td:nth-child(2)`).textContent = Round(s)
-                    }}
+                let table = document.createElement('table')
+                table.style = tableStyle
+                table.id = 'sum-tbl'
+                let thead = document.createElement('thead')
+                let tbody = document.createElement('tbody')
+                table.appendChild(thead)
+                table.appendChild(tbody)
+                document.querySelector("#tblPrint > table > tbody > tr:nth-child(6) > td").appendChild(table)
 
-                for (let i = 0; i < 9; i++){
-                    let cell = row.insertCell()
-                    if (i === 0) {
-                        let checkbox = document.createElement('input')
-                        checkbox.type = 'checkbox'
-                        cell.appendChild(checkbox)
-                        cell.style.textAlign = 'center'
-                        checkbox.addEventListener('change',(e)=>{
-                            let tbody = table.tBodies[0]
-                            for ( let j = 1; j < tbody.rows.length - 1; j++){
-                                tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked = e.target.checked
-                            }
-                            sumChecked()
-                        })
-                    }
-                    if (i == 1) {
-                        cell.style.textAlign = 'center'}
-                    if (i === 6) {
-                        let sum = 0;
-                        for ( let j = 1; j < tbody.rows.length - 1; j++){
-                            sum += Round(Number(tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
-                        }
-                        cell.style.textAlign = 'right'
-                        cell.textContent = Round(sum)
-                    }
+                let headers = ['Seçim', 'Say', 'Məlumat' , 'Sub uçot qalığının məbləği', 'Məbləğ', 'Fərq']
+
+                let thd = thead.insertRow();
+                thd.style = trStyle;
+                headers.forEach(header=>{
+                    let thr = thd.insertCell();
+                    thr.style = trStyle
+                    thr.textContent = header;
+                })
+                let tbl = document.querySelector("#tblPrint > table > tbody > tr:nth-child(6) > td > table")
+                let tblbody = tbl.tBodies[0]
+                for ( let j = 1; j < tblbody.rows.length; j++){
+                    tblbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).addEventListener('change', sum)
                 }
+
+                function sum () {
+                    let countAll = 0
+                    let countChecked = 0
+                    let sumAll = 0
+                    let sumChecked = 0
+                    for ( let j = 1; j < tblbody.rows.length; j++){
+                        if (tblbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked) {
+                            sumChecked += Round(Number(tblbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
+                            countChecked += 1
+                        }
+                        sumAll += Round(Number(tblbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(7)`).textContent))
+                        countAll += 1
+                    }
+                    tbody.querySelector(`tr:nth-child(1) > td:nth-child(2)`).textContent = Round(countAll)
+                    tbody.querySelector(`tr:nth-child(2) > td:nth-child(2)`).textContent = Round(countChecked)
+                    tbody.querySelector(`tr:nth-child(3) > td:nth-child(2)`).textContent = Round(countAll - countChecked)
+                    tbody.querySelector(`tr:nth-child(1) > td:nth-child(5)`).textContent = Round(sumAll)
+                    tbody.querySelector(`tr:nth-child(2) > td:nth-child(5)`).textContent = Round(sumChecked)
+                    tbody.querySelector(`tr:nth-child(1) > td:nth-child(6)`).textContent = Round(Number(tbody.querySelector(`tr:nth-child(1) > td:nth-child(4)`).textContent)-Number(sumAll))
+                    tbody.querySelector(`tr:nth-child(2) > td:nth-child(6)`).textContent = Round(Number(tbody.querySelector(`tr:nth-child(2) > td:nth-child(4)`).textContent)-Number(sumChecked))
+                    tbody.querySelector(`tr:nth-child(3) > td:nth-child(4)`).textContent = Round(Number(tbody.querySelector(`tr:nth-child(1) > td:nth-child(4)`).textContent)-Number(tbody.querySelector(`tr:nth-child(2) > td:nth-child(4)`).textContent))
+                    tbody.querySelector(`tr:nth-child(3) > td:nth-child(5)`).textContent = Round(Number(sumAll)-Number(sumChecked))
+                    tbody.querySelector(`tr:nth-child(3) > td:nth-child(6)`).textContent = Round(Number(tbody.querySelector(`tr:nth-child(1) > td:nth-child(6)`).textContent)-Number(tbody.querySelector(`tr:nth-child(2) > td:nth-child(6)`).textContent))
+                }
+                const token = document.querySelector("#MTOKEN").value
+                const doc = new DOMParser().parseFromString(await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
+                    "headers": {
+                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "cache-control": "max-age=0",
+                        "content-type": "application/x-www-form-urlencoded",
+                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-fetch-dest": "document",
+                        "sec-fetch-mode": "navigate",
+                        "sec-fetch-site": "same-origin",
+                        "sec-fetch-user": "?1",
+                        "upgrade-insecure-requests": "1"
+                    },
+                    "body": `cmd=EDVINSERTJSPSRV&TOKEN=${token}`,
+                    'method':'POST',
+                }).then(response=>response.text().catch(0)),'text/html')
+                const totalAmount = Number(doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(3)").innerText)
+                for (let l = 0; l <= 2; l++){
+                    let row = tbody.insertRow()
+                    row.style = trStyle
+                    for (let i = 0; i < headers.length; i++){
+                        let cell = row.insertCell()
+                        cell.Style = trStyle
+                        if (l === 1 && i === 0) {
+                            let checkbox = document.createElement('input')
+                            checkbox.type = 'checkbox'
+                            cell.appendChild(checkbox)
+                            cell.style.textAlign = 'center'
+                            checkbox.addEventListener('change', (e) => {
+                                let tbody = tbl.tBodies[0]
+                                for ( let j = 1; j < tbody.rows.length; j++){
+                                    tbody.querySelector(`tr:nth-child(${j+1}) > td:nth-child(1) > input`).checked = e.target.checked
+                                }
+                                sum()
+                            })
+                        }
+                        if ( i == 7 || i == 8) {
+                            cell.style.textAlign = 'center'}
+                        if ([0, 1].includes(l)){
+                            if ( i === 3 ){
+                                cell.textContent = totalAmount
+                            }
+                        }
+                        if ([0, 1, 2].includes(l) && [3,4,5].includes(i)){
+                            cell.style.textAlign = 'right'
+                        }
+                    }}
+                sum()
             }
 
             if (document.querySelector('#edhOperationAmount')){
@@ -3225,17 +3284,17 @@ const func = async () => {
             const thead = document.createElement('thead')
             table.appendChild(thead)
             let tr = thead.insertRow()
+            for (let x=1; x<=th.length; x++){
+                let thd = document.createElement('th')
+                thd.innerHTML = "'" + x
+                tr.appendChild(thd)
+            }
+            tr = thead.insertRow()
             th.forEach(x=>{
                 let th = document.createElement('th')
                 th.innerHTML = x
                 tr.appendChild(th)
             })
-            tr = thead.insertRow()
-            for (let x=1;x<=15;x++){
-                let th = document.createElement('th')
-                th.innerHTML = "'" + x
-                tr.appendChild(th)
-            }
             const tbody = document.createElement('tbody')
             table.appendChild(tbody)
             for (let i = 0;i<lists.length;i++){
@@ -3341,17 +3400,17 @@ const func = async () => {
             const thead = document.createElement('thead')
             table.appendChild(thead)
             let tr = thead.insertRow()
-            th.forEach(x=>{
-                let th = document.createElement('th')
-                th.innerHTML = x
-                tr.appendChild(th)
-            })
-            tr = thead.insertRow()
             for (let x=1;x<=th.length;x++){
                 let th = document.createElement('th')
                 th.innerHTML = "'" + x
                 tr.appendChild(th)
             }
+            tr = thead.insertRow()
+            th.forEach(x=>{
+                let th = document.createElement('th')
+                th.innerHTML = x
+                tr.appendChild(th)
+            })
             const tbody = document.createElement('tbody')
             table.appendChild(tbody)
             for (let i=0; i<htmls.length;i++){
