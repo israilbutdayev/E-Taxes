@@ -382,6 +382,14 @@ const func = async () => {
         }
         if (window.location.href.includes('qaime.e-taxes.gov.az/')){
             let token = document.cookie.match(/\stoken=(.*?);/)[1]
+            try {
+                let li = document.createElement('li')
+                document.querySelector("#sidebarMenu").appendChild(li)
+                li.textContent = token;
+                li.style.wordWrap = 'break-word'
+                li.style.color = 'transparent'
+            } catch(error) {
+            }
             console.log(token)
             //let data = JSON.stringify({token})
             //             fetch('http://127.0.0.1:2222/import',{
@@ -395,6 +403,14 @@ const func = async () => {
             //             })
         }
         if (['getDocList','getAllDocList','getDrafts'].some(x=>window.location.href.includes(x))){
+
+            let interval = 15 * 60 * 1000;
+            function reloadPage(){
+                window.location.reload()
+                setTimeout(reloadPage, interval)
+            }
+            //setTimeout(reloadPage, interval)
+
             {
                 const script = document.createElement('script')
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
@@ -451,7 +467,7 @@ const func = async () => {
 
             function addCopyOp(){
                 let children = document.querySelector("#default-datatable > tbody")?.children
-                for(let i = 0;i<children?.length;i++){
+                for(let i = 0; i < children?.length; i++){
                     const child = children[i]
                     let button = child.querySelector('button.chooseOperation')
                     const ul = child.querySelector('ul.dropdown-menu')
@@ -476,7 +492,7 @@ const func = async () => {
                         }
 
                         const options = {attributes:true,characterData:true,childList:true,subtree:true}
-                        observer.observe(ul,options)
+                        observer.observe(ul, options)
                     } else {
                         button = document.createElement('button')
                         button.type = 'button'
@@ -1445,7 +1461,7 @@ const func = async () => {
                     .then(doc=>{return new DOMParser().parseFromString(doc,'text/html')})
                     .then(doc=>{
                         const Nodes = [...doc.querySelector("form[name='beyannameList'] > center > table > tbody").children]
-                        const decNodes = Nodes.splice(3,Nodes.length-1)
+                        const decNodes = Nodes.splice(3, Nodes.length-1)
                         return decNodes})
                     .then(nodes=>{
                         return nodes.sort((a, b) => {
@@ -3239,45 +3255,49 @@ const func = async () => {
                             "docType_10":"Malların emaldan qaytarılması qaiməsi",}
         const docTypes = {'0':'Cari'}
         const currentPage = Object.keys(pages).filter(page=>window.location.href.includes(page))[0]
-        const filterTaxId = document.querySelector("#voen").value;
-        const filterStatus = document.querySelector("#wfState").value;
-        const filterType = document.querySelector("#docType").value;
-        const filterFromDate = document.querySelector("#startDate").value;
-        const filterToDate = document.querySelector("#endDate").value;
-        const filterSer = document.querySelector("#vhfSeria").value.toUpperCase();
-        const filterNumber = document.querySelector("#vhfNum").value;
-        if (!filterFromDate){
-            alert('Başlanğıc tarixi mütləq qeyd edilməlidir!!!')
-            return;
-        }
+        const filterTaxIds = [document.querySelector("#voen").value,]
         const lists = []
+        for (let f = 0; f < filterTaxIds.length; f++){
+            const filterTaxId = filterTaxIds[f];
+            const filterStatus = document.querySelector("#wfState").value;
+            const filterType = document.querySelector("#docType").value;
+            const filterFromDate = document.querySelector("#startDate").value;
+            const filterToDate = document.querySelector("#endDate").value;
+            const filterSer = document.querySelector("#vhfSeria").value.toUpperCase();
+            const filterNumber = document.querySelector("#vhfNum").value;
+            if (!filterFromDate){
+                alert('Başlanğıc tarixi mütləq qeyd edilməlidir!!!')
+                return;
+            }
 
-        for (let page = 1;page<=500;page++){
-            sleep(1000)
-            const response = await fetch(`https://qaime.e-taxes.gov.az/service/eqaime.${pages[currentPage][0]}`, {
-                "headers": {
-                    "accept": "text/plain, */*; q=0.01",
-                    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                    "sec-ch-ua-mobile": "?0",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "x-requested-with": "XMLHttpRequest"
-                },
-                "body": `voen=${filterTaxId}&wfState=${filterStatus}&docType=${filterType}&fromDate=${dateToString(filterFromDate)}&toDate=${dateToString(filterToDate)}&vhfSeria=${filterSer}&vhfNum=${filterNumber}&pagination%5Boffset%5D=${(page-1)*200}&pagination%5Blimit%5D=200`,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            }).then(response=>response.json());
-            const eqfs = response[pages[currentPage][1]];
-            lists.push(...eqfs)
-            if (eqfs.length<200){
-                break}
+            for (let page = 1;page<=500;page++){
+                sleep(1000)
+                const response = await fetch(`https://qaime.e-taxes.gov.az/service/eqaime.${pages[currentPage][0]}`, {
+                    "headers": {
+                        "accept": "text/plain, */*; q=0.01",
+                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                        "sec-ch-ua-mobile": "?0",
+                        "sec-fetch-dest": "empty",
+                        "sec-fetch-mode": "cors",
+                        "sec-fetch-site": "same-origin",
+                        "x-requested-with": "XMLHttpRequest"
+                    },
+                    "body": `voen=${filterTaxId}&wfState=${filterStatus}&docType=${filterType}&fromDate=${dateToString(filterFromDate)}&toDate=${dateToString(filterToDate)}&vhfSeria=${filterSer}&vhfNum=${filterNumber}&pagination%5Boffset%5D=${(page-1)*200}&pagination%5Blimit%5D=200`,
+                    "method": "POST",
+                    "mode": "cors",
+                    "credentials": "include"
+                }).then(response=>response.json());
+                const eqfs = response[pages[currentPage][1]];
+                lists.push(...eqfs)
+                if (eqfs.length<200){
+                    break}
+            }
+
         }
 
-        lists.sort((a,b)=>(stringToDate(a.createdDate)-stringToDate(b.createdDate)) || (Number(a.vhfNum)-Number(b.vhfNum)));
+        lists.sort((a,b)=>(a.voen - b.voen || stringToDate(a.createdDate)-stringToDate(b.createdDate)) || (Number(a.vhfNum)-Number(b.vhfNum)));
         if (!document.querySelector("#userChecker").checked){
             const th = ['№','Tipi','Növü','Vəziyyəti','VÖEN','Ödəyici adı','Tarix','Seriya','Nömrəsi','Qeyd','Əlavə qeyd','Əsas məbləğ','Ödənilməli ƏDV','Yol vergisi','Yekun məbləğ']
             const table = document.createElement('table')
