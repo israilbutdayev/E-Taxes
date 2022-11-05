@@ -3577,5 +3577,5 @@ const func = async () => {
                 download(filename,new Blob([response],{type: 'text/plain'}))
             }catch{}
         }
-};
+});
 func();
