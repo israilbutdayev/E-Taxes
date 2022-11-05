@@ -3132,7 +3132,8 @@ const func = async () => {
                     }
                     refunds.push(response)
                 }
-            }}
+            }};
+        
         const th = ['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
         const table = document.createElement('table')
         const thead = document.createElement('thead')
