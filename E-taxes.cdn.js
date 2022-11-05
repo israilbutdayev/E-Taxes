@@ -1,5 +1,6 @@
 const func = async () => {
     'use strict';
+    console.log('code loaded')
         if (window.location.href.includes('PG_QAIME_1')){
             debugger
             const script = document.createElement('script')
