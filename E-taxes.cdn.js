@@ -3058,7 +3058,7 @@ const func = async () => {
             }
 
         }
-    })
+    }
 
     async function refundList(){
 
