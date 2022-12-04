@@ -1,21 +1,6 @@
-// ==UserScript==
-// @name         E-taxes
-// @namespace    http://tampermonkey.net/
-// @version      0.0.1
-// @description  050 636 09 56
-// @run-at       document-start
-// @author       Israil Butdayev
-// @match        https://qaime.e-taxes.gov.az/*
-// @match        https://www.e-taxes.gov.az/vedop2/ebyn/dispatch*
-// @updateURL    https://raw.githubusercontent.com/israilbutdayev/E-Taxes/main/E-taxes.meta.js
-// @downloadURL  https://raw.githubusercontent.com/israilbutdayev/E-Taxes/main/E-taxes.main.js
-// @icon         https://qaime.e-taxes.gov.az/assets/images/placeholder.jpg
-// @grant        none
-// ==/UserScript==
-
 const func = async () => {
     'use strict';
-    window.addEventListener('load', async function() {
+    console.log('code loaded')
         if (window.location.href.includes('PG_QAIME_1')){
             debugger
             const script = document.createElement('script')
@@ -3074,7 +3059,7 @@ const func = async () => {
             }
 
         }
-    })
+    }
 
     async function refundList(){
 
@@ -3148,7 +3133,8 @@ const func = async () => {
                     }
                     refunds.push(response)
                 }
-            }}
+            }};
+        
         const th = ['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
         const table = document.createElement('table')
         const thead = document.createElement('thead')
@@ -3591,6 +3577,5 @@ const func = async () => {
                 download(filename,new Blob([response],{type: 'text/plain'}))
             }catch{}
         }
-    })
-};
+});
 func();
