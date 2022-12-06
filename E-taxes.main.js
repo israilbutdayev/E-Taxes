@@ -1396,6 +1396,19 @@ const func = async () => {
                         label.appendChild(labelText)
                         document.querySelector("#bodyDiv").appendChild(label)
                         {
+                            const label = document.createElement('label')
+                            label.id = 'Last'
+                            label.style.fontSize = '14px'
+                            const labelText = document.createTextNode('text')
+                            labelText.textContent = 'Ən sonuncu paket'
+                            const checkbox = document.createElement('input')
+                            checkbox.type = 'checkbox';
+                            checkbox.id = 'lastpaket'
+                            checkbox.checked = true
+                            label.appendChild(checkbox)
+                            label.appendChild(labelText)
+                            document.querySelector("#bodyDiv").appendChild(label)}
+                        {
                             const btn = document.createElement('input');
                             btn.type = 'button';
                             btn.value = 'Export';
@@ -1427,6 +1440,7 @@ const func = async () => {
                     const vergiNo = document.querySelector('[name="vergiNo"]').value;
                     const decType = document.querySelector("[name='beyannameTanim']").value
                     const onePaket = document.querySelector("#onePaket").checked;
+                    const lastPaket = document.querySelector("#lastPaket").checked
                     const declType = document.querySelector("input[type=radio][name='declType']:checked").value;
                     const Paket = new JSZip();
                     const vergiAd = await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
@@ -1453,7 +1467,7 @@ const func = async () => {
                     .then(html=>new DOMParser().parseFromString(html,'text/html')).then(doc=>doc.querySelector("col.table_header").parentElement.parentElement.querySelector("tbody > tr:nth-child(3) > td:nth-child(2)").textContent)
                     const data = `TOKEN=${token}&cmd=BEYANNAMELISTESI&grupSayi=0&${document.querySelector('[name="sorguTipiN"]').checked ? 'sorguTipiN=1&':''}vergiNo=${vergiNo}&${document.querySelector('[name="sorguTipiB"]').checked ? 'sorguTipiB=1&':''}beyannameTanim=${decType}&${document.querySelector('[name="sorguTipiP"]').checked ? 'sorguTipiP=1&':''}donemBasAy=${monthFrom}&donemBasYil=${yearFrom}&donemBitAy=${monthTo}&donemBitYil=${yearTo}&${document.querySelector('[name="sorguTipiV"]').checked ? 'sorguTipiV=1&':''}vdKodu=10&${document.querySelector('[name="sorguTipiZ"]').checked ? 'sorguTipiZ=1&':''}baslangicTarihi=${new Date().toLocaleDateString('ru')}&bitisTarihi=${new Date().toLocaleDateString('ru')}&${document.querySelector('[name="sorguTipiD"]').checked ? 'sorguTipiD=1&':''}durum=4&${document.querySelector('[name="sorguTipiS"]').checked ? 'sorguTipiS=1&':''}sentType=12${document.querySelector("input[type=checkbox][name='sorguTipiDt']").checked ? '&sorguTipiDt=1&declType='+encodeURI(declType):''}`
                     let xmlName;
-                    const decs = await fetch('https://www.e-taxes.gov.az/vedop2/ebyn/dispatch', {
+                    let response = await fetch('https://www.e-taxes.gov.az/vedop2/ebyn/dispatch', {
                         headers: {
                             accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                             'accept-language': 'en-US,en;q=0.9',
@@ -1474,25 +1488,22 @@ const func = async () => {
                         mode: 'cors',
                         credentials: 'include',
                     }).then((response) => response.text())
-                    .then(doc=>{return new DOMParser().parseFromString(doc,'text/html')})
-                    .then(doc=>{
-                        const Nodes = [...doc.querySelector("form[name='beyannameList'] > center > table > tbody").children]
-                        const decNodes = Nodes.splice(3, Nodes.length-1)
-                        return decNodes})
-                    .then(nodes=>{
-                        return nodes.sort((a, b) => {
+                    let doc = new DOMParser().parseFromString(response,'text/html')
+                    const nodes = [...doc.querySelector("form[name='beyannameList'] > center > table > tbody").children]
+                    const decNodes = nodes.splice(3, nodes.length-1)
+                    let decs = decNodes
+                    if (lastPaket){
+                        decs = []
+                        let sortedNodes = decNodes.sort((a, b) => {
                             return (stringToDate(b.title) - stringToDate(a.title));
-                        })})
-                    .then(sortedNodes=>{
-                        const decs = []
+                        })
                         for (let i = 0; i < sortedNodes.length; i++){
                             const decNode = sortedNodes[i]
-                            if ((!decs.length || !decs.filter(x=>(x.children?.[7].textContent===decNode.children?.[7].textContent) && (x.children?.[4].textContent===decNode.children?.[4].textContent)).length)) {
+                            if ((!decs.length || !decs.filter(x=>(x.children?.[4].textContent===decNode.children?.[4].textContent) && (x.children?.[7].textContent===decNode.children?.[7].textContent)).length)) {
                                 decs.push(decNode)
                             }
                         }
-                        return decs
-                    })
+                    }
                     let table,thead,tbody,th1,th2,th
                     for (let i = 0; i < decs.length; i++){
                         let dec = decs[i];
@@ -2952,8 +2963,70 @@ const func = async () => {
                                     .createElement("th")
                                     .appendChild(document.createTextNode("Ay")).parentNode
                                 );
+
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Tarix")).parentNode
+                                );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Növ")).parentNode
+                                );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Təqdim edən")).parentNode
+                                );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Say")).parentNode
+                                );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Sıra")).parentNode
+                                );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Əks-Sıra")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Tarix")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Növ")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Təqdim edən")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Say")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Sıra")).parentNode
+                                );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Əks-Sıra")).parentNode
+                                );
                                 thead.appendChild(th1);
                                 thead.appendChild(th2);
+
                                 for (let j = 0; j < targets.length; j++) {
                                     let target = targets[j];
                                     let { name, data, prop } = target;
@@ -2981,7 +3054,6 @@ const func = async () => {
                                         tr.appendChild(td);
                                     }
                                 }
-
                             }
                             let tr = document.createElement("tr");
                             tr.appendChild(
@@ -3003,7 +3075,61 @@ const func = async () => {
                                     )
                                 ).parentNode
                             );
-
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        date + " " + time
+                                    )
+                                ).parentNode
+                            );
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        dec.querySelector('td:nth-child(11)').textContent
+                                    )
+                                ).parentNode
+                            );
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        dec.querySelector("td:nth-child(10)").textContent
+                                    )
+                                ).parentNode
+                            );
+                            let count = [...decNodes].filter(d=>d.querySelector("td:nth-child(8)").textContent === dec.querySelector("td:nth-child(8)").textContent).length;
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        count
+                                    )
+                                ).parentNode
+                            );
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        "0"
+                                    )
+                                ).parentNode
+                            );
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        "0"
+                                    )
+                                ).parentNode
+                            );
                             for (let j = 0; j < targets.length; j++) {
                                 let target = targets[j];
                                 let { name, parent, data, prop } = target;
@@ -3034,13 +3160,38 @@ const func = async () => {
                             }
                             tbody.appendChild(tr);
                             if (i === decs.length-1){
-                                let tr = document.createElement("tr");
-                                tr.appendChild(document.createElement("td"));
-                                tr.appendChild(document.createElement("td"));
                                 table.appendChild(thead);
                                 table.appendChild(tbody);
+                                table.style.borderCollapse = "collapse";
+                                th2.querySelector("th").style.width = "50px";
+                                let children = tbody.children;
+                                let sorted = [...children].sort((a,b)=>{
+                                    return (Number(a.children[0].textContent) - Number(b.children[0].textContent) || Number(a.children[1].textContent) - Number(b.children[1].textContent) || dateToString(a.children[2].textContent) - dateToString(b.children[2].textContent))
+                                })
+                                tbody.replaceChildren(...sorted)
+                                let tr = document.createElement("tr");
+                                for (let t = 0; t <= 7; t++){
+                                    tr.appendChild(document.createElement("td"));
+                                }
 
-                                for (let c = 2; c <= tbody.firstChild.lastChild.cellIndex; c++) {
+                                for (let r1 = 0; r1 < tbody.children.length; r1++) {
+                                    let c = 0;
+                                    if (lastPaket){
+                                        tbody.children[r1].children[6].textContent = tbody.children[r1].children[5].textContent
+                                        tbody.children[r1].children[7].textContent = 1
+                                    } else {
+                                        for (let r2 = 0; r2 <= r1; r2++) {
+                                            if(tbody.children[r2].children[0].textContent === tbody.children[r1].children[0].textContent && tbody.children[r2].children[1].textContent === tbody.children[r1].children[1].textContent){
+                                                c++
+                                            }
+                                        }
+                                        tbody.children[r1].children[6].textContent = c
+                                        tbody.children[r1].children[7].textContent = Number(tbody.children[r1].children[5].textContent)-c+1
+                                    }
+
+                                }
+
+                                for (let c = 8; c <= [...tbody?.children?.[0]?.children].at(-1)?.cellIndex; c++) {
                                     let sum = 0;
                                     for (let r = 0; r < tbody.children.length; r++) {
                                         sum +=
@@ -3054,24 +3205,6 @@ const func = async () => {
                                     tr.appendChild(td);
                                 }
                                 tbody.appendChild(tr);
-                                table.style.borderCollapse = "collapse";
-                                th2.querySelector("th").style.width = "50px";
-                                let children = tbody.children;
-                                if (children.length > 0) {
-                                    function sorting(i = 0) {
-                                        let nodes = [...children].slice(0, children.length-1);
-                                        if (nodes[i]?.children.length === 1) {
-                                            return;
-                                        } else if (Number(nodes[i].children[0].textContent+nodes[i].children[1].textContent) >= Number(nodes[i+1]?.children[0]?.textContent+nodes[i+1]?.children[1]?.textContent)) {
-                                            nodes[i + 1].after(nodes[i]);
-                                            sorting(i > 0 ? i - 1 : i);
-                                        } else if (i < nodes.length-2) {
-                                            sorting(i + 1);
-                                        }
-                                    }
-                                    sorting();
-                                }
-
                                 let newTab = window.open('')
                                 newTab.document.body.appendChild(table);
                                 newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black;width: 100px ;min-width: 50px;}; </style>')
