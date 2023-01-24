@@ -79,6 +79,7 @@ const func = async () => {
             for (let a = 0; a <= 1000; a++){
                 try{
                     Handsontable;
+                    let tmp = document.querySelector("#data_form > div.col-md-12 > div.panel.panel-white > div.panel-body > div.col-md-12.mt-20 > div > table").tHead.children[0].children[8].style.display;
                     firstPageEvent();
                     firstPageButton.addEventListener('click',firstPageEvent);
                     uploadButton.addEventListener('click',uploadData);
@@ -198,6 +199,19 @@ const func = async () => {
             //                 // console.log(e)
             //             }
             async function firstPageEvent(){
+                let colHeaders
+                let dataSchema
+                let cond = document.querySelector("#data_form > div.col-md-12 > div.panel.panel-white > div.panel-body > div.col-md-12.mt-20 > div > table").tHead.children[0].children[8].style.display!=='none'
+                if (cond){
+                    colHeaders = ['№','Seçim','1. Malın (işin, xidmətin) kodu','1. Malın (işin, xidmətin) adı','2. Barkod','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)','7. Aksiz Dərəcəsi (%)',
+                                  '8. Aksiz Məbləği manatla','9. Cəmi (6+8)','10. ƏDV-yə cəlb edilən','11. ƏDV-yə cəlb edilməyən','12. ƏDV-dən azad olunan','13. ƏDV-yə 0 dərəcə ilə cəlb edilən','14. ƏDV məbləği manatla (10*0.18)','15. Yol Vergisi',
+                                  '16. Yekun məbləğ (manatla) (9+14+15)','ƏDV dərəcəsi','Qiymətlərə ƏDV daxildir.']
+                    dataSchema = {defaultText:'18%',VATIncluded:'+'}
+                } else {
+                    colHeaders = ['№','Seçim','1. Malın (işin, xidmətin) kodu','1. Malın (işin, xidmətin) adı','2. Barkod','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)']
+                    dataSchema = {defaultText:'-',VATIncluded:'-'}
+                }
+
                 if (document.querySelector('div#page2')){
                     document.querySelector('div#page2').style.display = 'none'
                 }
@@ -209,13 +223,13 @@ const func = async () => {
                     document.querySelector("#data_form > div:nth-child(9)")?.appendChild(div);
                     const container = document.querySelector('div#page1');
                     hot = new Handsontable(container, {
-                        dataSchema: {defaultText:'18%',VATIncluded:'+'},
-                        startCols:21,
+                        dataSchema,
+                        startCols:colHeaders.length,
                         startRows:10,
                         minRows:10,
                         //minSpareRows:1,
                         rowHeaders: true,
-                        colWidths:[40,50,100,100,70,70,70,70,70,70,70,70,70,70,70,70,70,70,100],
+                        colWidths:cond ? [40,50,100,100,70,70,70,70,70,70,70,70,70,70,70,70,70,70,100]:[50,50,150,200,150,150,150,150,150],
                         autoWrapRow:true,
                         wordWrap:false,
                         autoWrapColumn:true,
@@ -223,10 +237,8 @@ const func = async () => {
                         dropdownMenu: true,
                         filters: true,
                         manualColumnResize: true,
-                        colHeaders: ['№','Seçim','1. Malın (işin, xidmətin) kodu','1. Malın (işin, xidmətin) adı','2. Barkod','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)','7. Aksiz Dərəcəsi (%)',
-                                     '8. Aksiz Məbləği manatla','9. Cəmi (6+8)','10. ƏDV-yə cəlb edilən','11. ƏDV-yə cəlb edilməyən','12. ƏDV-dən azad olunan','13. ƏDV-yə 0 dərəcə ilə cəlb edilən','14. ƏDV məbləği manatla (10*0.18)','15. Yol Vergisi',
-                                     '16. Yekun məbləğ (manatla) (9+14+15)','ƏDV dərəcəsi','Qiymətlərə ƏDV daxildir.'],
-                        columns:[{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{type:'dropdown',data:'defaultText',source:['18%','','-','0']},{type:'dropdown',source:['+',''],data:'VATIncluded'}],
+                        colHeaders,
+                        columns: cond ? [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{type:'dropdown',data:'defaultText',source:['18%','','-','0']},{type:'dropdown',source:['+',''],data:'VATIncluded'}]:[{},{},{},{},{},{},{},{},{}],
                         colHeight:'auto',
                         licenseKey: 'non-commercial-and-evaluation',
                     });
@@ -235,6 +247,16 @@ const func = async () => {
 
             };
             async function secondPageEvent(){
+                let colHeaders
+                let dataSchema
+                let cond = document.querySelector("#data_form > div.col-md-12 > div.panel.panel-white > div.panel-body > div.col-md-12.mt-20 > div > table").tHead.children[0].children[8].style.display!=='none'
+                if (cond){
+                    colHeaders = ['1. Malın (işin, xidmətin) kodu','2. Malın (işin, xidmətin) adı','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)','7. ƏDV dərəcəsi','8. Qiymətlərə ƏDV daxildir.']
+                    dataSchema = {defaultText:'18%',VATIncluded:'+'}
+                } else {
+                    colHeaders = ['1. Malın (işin, xidmətin) kodu','2. Malın (işin, xidmətin) adı','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)']
+                    dataSchema = {defaultText:'-',VATIncluded:'-'}
+                }
                 if (document.querySelector('div#page1')){
                     document.querySelector('div#page1').style.display = 'none'
                 }
@@ -247,14 +269,14 @@ const func = async () => {
                     const container = document.querySelector('div#page2');
                     Handsontable.renderers.registerRenderer('vatRenderer', vatRenderer);
                     hot = new Handsontable(container, {
-                        dataSchema: {defaultText:'18%',VATIncluded:document.querySelector("#leftMenuOrgId").textContent==='1503047971'?'':'+'},
-                        startCols:7,
+                        dataSchema,
+                        startCols:colHeaders.length,
                         startRows:10,
                         minRows:10,
                         //minSpareRows:1,
                         minColumns:7,
                         rowHeaders: true,
-                        colWidths:[200,200,200,200,200,200,200,200],
+                        colWidths:cond?[200,200,200,200,200,200,200,200]:[200,200,200,200,200,200],
                         autoWrapRow:true,
                         wordWrap:false,
                         autoWrapColumn:true,
@@ -262,16 +284,16 @@ const func = async () => {
                         dropdownMenu: true,
                         filters: true,
                         manualColumnResize: true,
-                        colHeaders: ['1. Malın (işin, xidmətin) kodu','2. Malın (işin, xidmətin) adı','3. Ölçü vahidi','4. Miqdarı, həcmi','5. Vahidin buraxılış qiyməti (manatla)','6. Cəmi (manatla) (4*5)','7. ƏDV dərəcəsi','8. Qiymətlərə ƏDV daxildir.'],
-                        columns:[{},{},{},{},{},{},
-                                 {
-                                     type:'dropdown',
-                                     data:'defaultText',
-                                     //renderer:'vatRenderer',
-                                     source:['18%','','-','0']
-                                 },
-                                 {type:'dropdown',source:['+',''],data:'VATIncluded'}
-                                ],
+                        colHeaders,
+                        columns: cond ? [{},{},{},{},{},{},
+                                         {
+                                             type:'dropdown',
+                                             data:'defaultText',
+                                             //renderer:'vatRenderer',
+                                             source:['18%','','-','0']
+                                         },
+                                         {type:'dropdown',source:['+',''],data:'VATIncluded'}
+                                        ]:[{},{},{},{},{},{}],
                         colHeight:'auto',
                         licenseKey: 'non-commercial-and-evaluation',
                     });
@@ -1522,29 +1544,37 @@ const func = async () => {
                         if (pckg && pckg.size >= 1024 ){
                             blob = pckg //new Blob([pckg], {type: 'text/plain'});
                         } else {
-                            url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
-                            let resp = await fetch(
-                                url, {
-                                    headers: {
-                                        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                        'accept-language': 'en-US,en;q=0.9',
-                                        'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                        'sec-ch-ua-mobile': '?0',
-                                        'sec-fetch-dest': 'iframe',
-                                        'sec-fetch-mode': 'navigate',
-                                        'sec-fetch-site': 'same-origin',
-                                        'upgrade-insecure-requests': '1',
-                                    },
-                                    referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                                    referrerPolicy: 'strict-origin-when-cross-origin',
-                                    body: null,
-                                    method: 'GET',
-                                    mode: 'cors',
-                                    credentials: 'include',
+                            try {
+                                url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
+                                let resp = await fetch(
+                                    url, {
+                                        headers: {
+                                            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                                            'accept-language': 'en-US,en;q=0.9',
+                                            'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+                                            'sec-ch-ua-mobile': '?0',
+                                            'sec-fetch-dest': 'iframe',
+                                            'sec-fetch-mode': 'navigate',
+                                            'sec-fetch-site': 'same-origin',
+                                            'upgrade-insecure-requests': '1',
+                                        },
+                                        referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
+                                        referrerPolicy: 'strict-origin-when-cross-origin',
+                                        body: null,
+                                        method: 'GET',
+                                        mode: 'cors',
+                                        credentials: 'include',
+                                    }
+                                )
+                                blob = new Blob([await resp.blob()], { type: "application/zip" })
+                                if (blob.size < 800){
+                                    i--
+                                    continue
                                 }
-                            ).catch();
-                            blob = await resp.blob()
-                            localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
+                                localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
+                            } catch(error){
+                                console.log(error)
+                            }
                         }
                         let xml;
                         if (dec.querySelector('td:nth-child(11)').textContent==='Kameral' || dec.querySelector('td:nth-child(11)').textContent==='Analoji'){
@@ -1595,7 +1625,9 @@ const func = async () => {
                                         }
                                     }
                                 }
-                            }catch(error){}
+                            }catch(error){
+                                console.log(error)
+                            }
                         }
 
                         if (exp) {
@@ -3249,33 +3281,9 @@ async function refundList(){
     for (let year = fromYear;year<=toYear;year++){
         for (let month = (year===fromYear?fromMonth:1);month<=(year===toYear?toMonth:12);month++){
             const monthStr = ('0'+month).substr(('0'+month).length-2,2)
-            let request = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
-                "headers": {
-                    "accept": "text/plain, */*; q=0.01",
-                    "accept-language": "en-US,en;q=0.9",
-                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                    "sec-ch-ua-mobile": "?0",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "x-requested-with": "XMLHttpRequest"
-                },
-                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                "referrerPolicy": "strict-origin-when-cross-origin",
-                "body": `year=${year}&type=01&month=${monthStr}`,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"})
-            .then(response=>response.json())
-            .then(response=>response.declList)
-            .then(response=>response.filter(x=>(x?.declSumTotalEDV!=='') && (x?.declDate!=='')))
-            .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
-            .catch()
-            if (request?.declOid){
-                let response = await localforage.getItem(request.declOid)
-                if (!response || new Blob([response]).size < 4092){
-                    response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+            for (let t = 0; t < 10; t++){
+                try {
+                    let request = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
                         "headers": {
                             "accept": "text/plain, */*; q=0.01",
                             "accept-language": "en-US,en;q=0.9",
@@ -3289,15 +3297,48 @@ async function refundList(){
                         },
                         "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
                         "referrerPolicy": "strict-origin-when-cross-origin",
-                        "body": `year=${year}&type=01&month=${monthStr}&declOid=${request.declOid}&state=all`,
+                        "body": `year=${year}&type=01&month=${monthStr}`,
                         "method": "POST",
                         "mode": "cors",
-                        "credentials": "include"
-                    }).then(response=>response.text()).catch()
-                    localforage.setItem(request.declOid, response)
+                        "credentials": "include"})
+                    .then(response=>response.json())
+                    .then(response=>response.declList)
+                    .then(response=>response.filter(x=>(x?.declSumTotalEDV!=='') && (x?.declDate!=='')))
+                    .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
+                    .catch()
+                    if (request?.declOid){
+                        let response = await localforage.getItem(request.declOid)
+                        if (!response || new Blob([response]).size < 1024){
+                            response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+                                "headers": {
+                                    "accept": "text/plain, */*; q=0.01",
+                                    "accept-language": "en-US,en;q=0.9",
+                                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
+                                    "sec-ch-ua-mobile": "?0",
+                                    "sec-fetch-dest": "empty",
+                                    "sec-fetch-mode": "cors",
+                                    "sec-fetch-site": "same-origin",
+                                    "x-requested-with": "XMLHttpRequest"
+                                },
+                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
+                                "referrerPolicy": "strict-origin-when-cross-origin",
+                                "body": `year=${year}&type=01&month=${monthStr}&declOid=${request?.declOid}&state=all`,
+                                "method": "POST",
+                                "mode": "cors",
+                                "credentials": "include"
+                            }).then(response=>response.text()).catch()
+                        }
+                        if (new Blob([response]).size >= 1024){
+                            await localforage.setItem(request?.declOid, response)
+                            refunds.push(response)
+                        }
+                    }
+                    break
+                } catch(error){
                 }
-                refunds.push(response)
             }
+
         }};
 
     const th = ['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
@@ -3445,10 +3486,9 @@ async function printList(){
             if (eqfs.length<200){
                 break}
         }
-
     }
 
-    lists.sort((a,b)=>(a.voen - b.voen || stringToDate(a.createdDate)-stringToDate(b.createdDate)) || (Number(a.vhfNum)-Number(b.vhfNum)));
+    lists.sort((a,b)=>(stringToDate(a.createdDate)-stringToDate(b.createdDate)) || a.voen - b.voen || (Number(a.vhfNum)-Number(b.vhfNum)));
     if (!document.querySelector("#userChecker").checked){
         const th = ['№','Tipi','Növü','Vəziyyəti','VÖEN','Ödəyici adı','Tarix','Seriya','Nömrəsi','Qeyd','Əlavə qeyd','Əsas məbləğ','Ödənilməli ƏDV','Yol vergisi','Yekun məbləğ']
         const table = document.createElement('table')
