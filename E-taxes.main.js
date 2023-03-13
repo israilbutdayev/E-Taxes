@@ -1538,6 +1538,7 @@ const func = async () => {
                         const parts = dec.title.split(' ')
                         const xmlName = parts[2]
                         const date = parts[5]
+                        const dateReverse = date.split('.').reverse().join('.')
                         const time = parts[7]
                         let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
                         let blob;
@@ -1593,7 +1594,7 @@ const func = async () => {
                                     download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`, output)
                                     sleep(100)
                                 } else {
-                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
+                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + '-' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
                                 }}
                         } else {
                             const zip = new JSZip()
@@ -1617,7 +1618,7 @@ const func = async () => {
                                     if (dl){
                                         if (!onePaket){
                                             const output = await zip.generateAsync({type:"blob"})
-                                            download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`,output)
+                                            download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`,output)
                                             sleep(100)
                                         } else {
                                             const decBlob = new Blob([data],{type: 'text/plain'})
@@ -3277,71 +3278,8 @@ async function refundList(){
         fromMonth = 1}
     if (!toMonth){
         toMonth = 12}
-    let refunds = []
-    for (let year = fromYear;year<=toYear;year++){
-        for (let month = (year===fromYear?fromMonth:1);month<=(year===toYear?toMonth:12);month++){
-            const monthStr = ('0'+month).substr(('0'+month).length-2,2)
-            for (let t = 0; t < 10; t++){
-                try {
-                    let request = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
-                        "headers": {
-                            "accept": "text/plain, */*; q=0.01",
-                            "accept-language": "en-US,en;q=0.9",
-                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                            "sec-ch-ua-mobile": "?0",
-                            "sec-fetch-dest": "empty",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin",
-                            "x-requested-with": "XMLHttpRequest"
-                        },
-                        "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                        "referrerPolicy": "strict-origin-when-cross-origin",
-                        "body": `year=${year}&type=01&month=${monthStr}`,
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"})
-                    .then(response=>response.json())
-                    .then(response=>response.declList)
-                    .then(response=>response.filter(x=>(x?.declSumTotalEDV!=='') && (x?.declDate!=='')))
-                    .then(response=>response.sort((x,y)=>(stringToDate(y.declDate)-stringToDate(x.declDate)))[0])
-                    .catch()
-                    if (request?.declOid){
-                        let response = await localforage.getItem(request.declOid)
-                        if (!response || new Blob([response]).size < 1024){
-                            response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
-                                "headers": {
-                                    "accept": "text/plain, */*; q=0.01",
-                                    "accept-language": "en-US,en;q=0.9",
-                                    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                    "sec-ch-ua-mobile": "?0",
-                                    "sec-fetch-dest": "empty",
-                                    "sec-fetch-mode": "cors",
-                                    "sec-fetch-site": "same-origin",
-                                    "x-requested-with": "XMLHttpRequest"
-                                },
-                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                "referrerPolicy": "strict-origin-when-cross-origin",
-                                "body": `year=${year}&type=01&month=${monthStr}&declOid=${request?.declOid}&state=all`,
-                                "method": "POST",
-                                "mode": "cors",
-                                "credentials": "include"
-                            }).then(response=>response.text()).catch()
-                        }
-                        if (new Blob([response]).size >= 1024){
-                            await localforage.setItem(request?.declOid, response)
-                            refunds.push(response)
-                        }
-                    }
-                    break
-                } catch(error){
-                }
-            }
 
-        }};
-
-    const th = ['Dövr','№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
+    const th = ['Dövr','Say','Sıra','Əks-Sıra', 'Bəyannamənin tipi', 'Bəyannamənin növü', 'Bəyannamənin vəziyyəti', 'Bəyannamənin tarixi' ,'№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
     const table = document.createElement('table')
     const thead = document.createElement('thead')
     table.appendChild(thead)
@@ -3359,42 +3297,94 @@ async function refundList(){
     }
     const tbody = document.createElement('tbody')
     table.appendChild(tbody)
-    for (let i = 0;i < refunds.length; i++){
-        let refundlist = JSON.parse(refunds[i])?.refundListDTO
-        for (let j = 0; j<=refundlist.length-1; j++){
-            try{
-                const refund = refundlist[j]
-                let row = tbody.insertRow()
-                if (refund.qaimeSeria==='Cəmi'){
-                    row.insertCell().innerHTML = '01.' + refundlist[j-1].donem.substr(4,2) + '.' + refundlist[j-1].donem.substr(0,4);
-                    row.insertCell().innerHTML = '';
-                    row.insertCell().innerHTML = '';
-                    row.insertCell().innerHTML = refund.qaimeSeria;
-                    row.insertCell().innerHTML = refund.qaimeNum;
-                    row.insertCell().innerHTML = refund.columnCode;
-                    row.insertCell().innerHTML = refund.toVoen;
-                    row.insertCell().innerHTML = refund.payerName;
-                    row.insertCell().innerHTML = "'"+refund.umumiEdvsiz.replace(/\./g,',');
-                    row.insertCell().innerHTML = "'"+refund.umumiEdv.replace(/\./g,',');
-                    row.insertCell().innerHTML = "'"+refund.odenilmisEdvsiz.replace(/\./g,',');
-                    row.insertCell().innerHTML = "'"+refund.odenilmisEdv.replace(/\./g,',');
-                } else {
-                    row.insertCell().innerHTML = '01.' + refundlist[j].donem.substr(4,2) + '.' + refundlist[j].donem.substr(0,4);
-                    row.insertCell().innerHTML = j+1;
-                    row.insertCell().innerHTML = stringToDate(refund.qaimeDate + '000000').toLocaleDateString("ru");
-                    row.insertCell().innerHTML = refund.qaimeSeria;
-                    row.insertCell().innerHTML = refund.qaimeNum;
-                    row.insertCell().innerHTML = refund.columnCode;
-                    row.insertCell().innerHTML = refund.toVoen;
-                    row.insertCell().innerHTML = refund.payerName;
-                    row.insertCell().innerHTML = refund.umumiEdvsiz.replace(/\./g,',');
-                    row.insertCell().innerHTML = refund.umumiEdv.replace(/\./g,',');
-                    row.insertCell().innerHTML = refund.odenilmisEdvsiz.replace(/\./g,',');
-                    row.insertCell().innerHTML = refund.odenilmisEdv.replace(/\./g,',');
+    for (let year = fromYear; year<=toYear; year++){
+        for (let month = (year===fromYear?fromMonth:1);month<=(year===toYear?toMonth:12);month++){
+            const monthStr = ('0'+month).substr(('0'+month).length-2,2)
+            for (let t = 0; t < 10; t++){
+                try {
+                    let requests = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getDeclarationList", {
+                        "headers": {
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        },
+                        "body": `year=${year}&type=01&month=${monthStr}`,
+                        "method": "POST",})
+                    .then(response=>response.json())
+                    .then(response=>response.declList)
+                    .then(response=>response.sort((x,y)=>(stringToDate(x.declDate)-stringToDate(y.declDate))))
+                    .catch()
+                    for (let k = 0; k < requests.length; k++){
+                        const request = requests[k]
+                        if (request?.declOid){
+                            let response = await localforage.getItem(request.declOid)
+                            if (!response || new Blob([response]).size < 1024){
+                                response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
+                                    "headers": {
+                                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                    },
+                                    "body": `year=${year}&type=01&month=${monthStr}&declOid=${request?.declOid}&state=all`,
+                                    "method": "POST",
+                                }).then(response=>response.text()).catch()
+                            }
+                            if (new Blob([response]).size >= 1024){
+                                await localforage.setItem(request?.declOid, response)
+                                let refundlist = JSON.parse(response)?.refundListDTO
+                                for (let j = 0; j<=refundlist.length-1; j++){
+                                    try{
+                                        const refund = refundlist[j]
+                                        let row = tbody.insertRow()
+                                        if (refund.qaimeSeria==='Cəmi'){
+                                            row.insertCell().innerHTML = '01.' + refundlist[j-1].donem.substr(4,2) + '.' + refundlist[j-1].donem.substr(0,4);
+                                            row.insertCell().innerHTML = requests.length
+                                            row.insertCell().innerHTML = k + 1
+                                            row.insertCell().innerHTML = requests.length - k
+                                            row.insertCell().innerHTML = request.declType;
+                                            row.insertCell().innerHTML = request.declType2;
+                                            row.insertCell().innerHTML = request.declState;
+                                            row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = '';
+                                            row.insertCell().innerHTML = "'"+refund.umumiEdvsiz.replace(/\./g,',');
+                                            row.insertCell().innerHTML = "'"+refund.umumiEdv.replace(/\./g,',');
+                                            row.insertCell().innerHTML = "'"+refund.odenilmisEdvsiz.replace(/\./g,',');
+                                            row.insertCell().innerHTML = "'"+refund.odenilmisEdv.replace(/\./g,',');
+                                        } else {
+                                            row.insertCell().innerHTML = '01.' + refundlist[j].donem.substr(4,2) + '.' + refundlist[j].donem.substr(0,4);
+                                            row.insertCell().innerHTML = requests.length
+                                            row.insertCell().innerHTML = k + 1
+                                            row.insertCell().innerHTML = requests.length - k
+                                            row.insertCell().innerHTML = request.declType;
+                                            row.insertCell().innerHTML = request.declType2;
+                                            row.insertCell().innerHTML = request.declState;
+                                            row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            row.insertCell().innerHTML = j+1;
+                                            row.insertCell().innerHTML = stringToDate(refund.qaimeDate + '000000').toLocaleDateString("ru");
+                                            row.insertCell().innerHTML = refund.qaimeSeria;
+                                            row.insertCell().innerHTML = refund.qaimeNum;
+                                            row.insertCell().innerHTML = refund.columnCode;
+                                            row.insertCell().innerHTML = refund.toVoen;
+                                            row.insertCell().innerHTML = refund.payerName;
+                                            row.insertCell().innerHTML = refund.umumiEdvsiz.replace(/\./g,',');
+                                            row.insertCell().innerHTML = refund.umumiEdv.replace(/\./g,',');
+                                            row.insertCell().innerHTML = refund.odenilmisEdvsiz.replace(/\./g,',');
+                                            row.insertCell().innerHTML = refund.odenilmisEdv.replace(/\./g,',');
+                                        }
+                                    } catch {
+                                        continue}
+                                }
+                            }
+                        }
+                    }
+                    break
+                } catch(error){
                 }
-            } catch {
-                continue}
-        }}
+            }
+        }
+    };
     let newTab = window.open()
     sleep(100)
     table.id = 'refund'
