@@ -450,7 +450,7 @@ const func = async () => {
 
             {
                 const script = document.createElement('script')
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                script.src = 'https://cdn.jsdelivr.net/npm/localforage/dist/localforage.min.js'
                 script.defer = true
                 document.head.appendChild(script)
             }
@@ -632,7 +632,7 @@ const func = async () => {
             }
             {
                 const script = document.createElement('script')
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                script.src = 'https://cdn.jsdelivr.net/npm/localforage/dist/localforage.min.js'
                 script.defer = true
                 document.head.appendChild(script)
             }
@@ -1360,21 +1360,11 @@ const func = async () => {
 
             if (document.querySelector('[name="beyannameList"]')) {
 
-                let children = document.querySelector(
-                    '#type-b > table:nth-child(3) > tbody > tr:nth-child(4) > td > form > center > table > tbody'
-                ).children;
-                if (children.length > 0) {
-                    function sorting(i = 0) {
-                        let nodes = [...children].slice(3, children.length);
-                        if (stringToDate(nodes[i].title) < stringToDate(nodes[i + 1].title)) {
-                            nodes[i + 1].after(nodes[i]);
-                            sorting(i > 0 ? i - 1 : i);
-                        } else if (i < nodes.length - 2) {
-                            sorting(i + 1);
-                        }
-                    }
-                    sorting();
-                }
+                const tbody = document.querySelector(
+                    'body > table:nth-child(3) > tbody > tr:nth-child(4) > td > form > center > table > tbody'
+                );
+                const children = tbody?.children
+                tbody.replaceChildren(...[...[...children].slice(0, 3), ...[...children].slice(3).sort((a, b) => (stringToDate(b.title) - stringToDate(a.title)) )])
             }
 
 
@@ -1382,12 +1372,12 @@ const func = async () => {
                 async function append(count=1000){
                     try{
                         const script = document.createElement('script')
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.js'
+                        script.src = 'https://cdn.jsdelivr.net/npm/jszip/dist/jszip.min.js'
                         script.defer = true
                         document.head.appendChild(script);
                         {
                             const script = document.createElement('script')
-                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js'
+                            script.src = 'https://cdn.jsdelivr.net/npm/localforage/dist/localforage.min.js'
                             script.defer = true
                             document.head.appendChild(script)
                         }
@@ -1511,7 +1501,10 @@ const func = async () => {
                         credentials: 'include',
                     }).then((response) => response.text())
                     let doc = new DOMParser().parseFromString(response,'text/html')
-                    const nodes = [...doc.querySelector("form[name='beyannameList'] > center > table > tbody").children]
+                    let nodes = []
+                    if (doc.querySelector("form[name='beyannameList'] > center > table > tbody")){
+                        nodes = [...doc.querySelector("form[name='beyannameList'] > center > table > tbody")?.children]
+                    }
                     const decNodes = nodes.splice(3, nodes.length-1)
                     let decs = decNodes
                     if (lastPaket){
@@ -1591,10 +1584,10 @@ const func = async () => {
                                     const zip = new JSZip()
                                     zip.file(xmlName + '.xml' , blob)
                                     const output = await zip.generateAsync({type:"blob"})
-                                    download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${date} ${time}.zip`, output)
+                                    download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`, output)
                                     sleep(100)
                                 } else {
-                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + '-' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
+                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
                                 }}
                         } else {
                             const zip = new JSZip()
@@ -1622,7 +1615,7 @@ const func = async () => {
                                             sleep(100)
                                         } else {
                                             const decBlob = new Blob([data],{type: 'text/plain'})
-                                            Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
+                                            Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
                                         }
                                     }
                                 }
@@ -3027,6 +3020,11 @@ const func = async () => {
                                     .createElement("th")
                                     .appendChild(document.createTextNode("Əks-Sıra")).parentNode
                                 );
+                                th1.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Seçim")).parentNode
+                                );
                                 th2.appendChild(
                                     document
                                     .createElement("th")
@@ -3057,6 +3055,11 @@ const func = async () => {
                                     .createElement("th")
                                     .appendChild(document.createTextNode("Əks-Sıra")).parentNode
                                 );
+                                th2.appendChild(
+                                    document
+                                    .createElement("th")
+                                    .appendChild(document.createTextNode("Seçim")).parentNode
+                                );
                                 thead.appendChild(th1);
                                 thead.appendChild(th2);
 
@@ -3067,7 +3070,7 @@ const func = async () => {
                                         for (let h = 0; h < data.length; h++) {
                                             let node = data[h];
                                             let th = document.createElement("th");
-                                            th.textContent = node?.["ad"];
+                                            th.textContent = node?.ad;
                                             th.colSpan = Object.keys(prop).length;
                                             th1.appendChild(th);
                                             for (let m = 0; m < Object.keys(prop).length; m++) {
@@ -3163,6 +3166,15 @@ const func = async () => {
                                     )
                                 ).parentNode
                             );
+                            tr.appendChild(
+                                document
+                                .createElement("td")
+                                .appendChild(
+                                    document.createTextNode(
+                                        ""
+                                    )
+                                ).parentNode
+                            );
                             for (let j = 0; j < targets.length; j++) {
                                 let target = targets[j];
                                 let { name, parent, data, prop } = target;
@@ -3203,7 +3215,7 @@ const func = async () => {
                                 })
                                 tbody.replaceChildren(...sorted)
                                 let tr = document.createElement("tr");
-                                for (let t = 0; t <= 7; t++){
+                                for (let t = 0; t <= 8; t++){
                                     tr.appendChild(document.createElement("td"));
                                 }
 
@@ -3212,6 +3224,7 @@ const func = async () => {
                                     if (lastPaket){
                                         tbody.children[r1].children[6].textContent = tbody.children[r1].children[5].textContent
                                         tbody.children[r1].children[7].textContent = 1
+                                        tbody.children[r1].children[8].textContent = "+"
                                     } else {
                                         for (let r2 = 0; r2 <= r1; r2++) {
                                             if(tbody.children[r2].children[0].textContent === tbody.children[r1].children[0].textContent && tbody.children[r2].children[1].textContent === tbody.children[r1].children[1].textContent){
@@ -3219,12 +3232,15 @@ const func = async () => {
                                             }
                                         }
                                         tbody.children[r1].children[6].textContent = c
-                                        tbody.children[r1].children[7].textContent = Number(tbody.children[r1].children[5].textContent)-c+1
+                                        tbody.children[r1].children[7].textContent = Number(tbody.children[r1].children[5].textContent) - c + 1
+                                        if (tbody.children[r1].children[5].textContent===tbody.children[r1].children[6].textContent){
+                                            tbody.children[r1].children[8].textContent = '+'
+                                        }
                                     }
 
                                 }
 
-                                for (let c = 8; c <= [...tbody?.children?.[0]?.children].at(-1)?.cellIndex; c++) {
+                                for (let c = 9; c <= [...tbody?.children?.[0]?.children].at(-1)?.cellIndex; c++) {
                                     let sum = 0;
                                     for (let r = 0; r < tbody.children.length; r++) {
                                         sum +=
