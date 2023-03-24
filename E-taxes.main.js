@@ -3326,13 +3326,13 @@ async function refundList(){
                         "method": "POST",})
                     .then(response=>response.json())
                     .then(response=>response.declList)
-                    .then(response=>response.sort((x,y)=>(stringToDate(x.declDate)-stringToDate(y.declDate))))
+                    //.then(response=>response.sort((x,y)=>(stringToDate(x.declDate)-stringToDate(y.declDate))))
                     .catch()
                     for (let k = 0; k < requests.length; k++){
                         const request = requests[k]
                         if (request?.declOid){
                             let response = await localforage.getItem(request.declOid)
-                            if (!response || new Blob([response]).size < 1024){
+                            if (!response || new Blob([response]).size < 1024 || !request?.declDate){
                                 response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                     "headers": {
                                         "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -3356,7 +3356,10 @@ async function refundList(){
                                             row.insertCell().innerHTML = request.declType;
                                             row.insertCell().innerHTML = request.declType2;
                                             row.insertCell().innerHTML = request.declState;
-                                            row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            try {
+                                                row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            } catch(error){
+                                            }
                                             row.insertCell().innerHTML = '';
                                             row.insertCell().innerHTML = '';
                                             row.insertCell().innerHTML = '';
@@ -3376,9 +3379,12 @@ async function refundList(){
                                             row.insertCell().innerHTML = request.declType;
                                             row.insertCell().innerHTML = request.declType2;
                                             row.insertCell().innerHTML = request.declState;
-                                            row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            try {
+                                                row.insertCell().innerHTML = stringToDate(request?.declDate).toLocaleString('ru').replace(',','')
+                                            } catch(error){
+                                            }
                                             row.insertCell().innerHTML = j+1;
-                                            row.insertCell().innerHTML = stringToDate(refund.qaimeDate + '000000').toLocaleDateString("ru");
+                                            row.insertCell().innerHTML = stringToDate(refund?.qaimeDate + '000000').toLocaleDateString("ru");
                                             row.insertCell().innerHTML = refund.qaimeSeria;
                                             row.insertCell().innerHTML = refund.qaimeNum;
                                             row.insertCell().innerHTML = refund.columnCode;
