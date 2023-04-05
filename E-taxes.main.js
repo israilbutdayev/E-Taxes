@@ -140,17 +140,17 @@ const func = async () => {
                     lastChild.children[4].querySelector('input').value = product.childNodes[3].textContent
                     lastChild.children[5].querySelector('input').value = product.childNodes[4].textContent
                     lastChild.children[6].querySelector('input').value = product.childNodes[5].textContent
-                    lastChild.children[7].querySelector('input').value = Round(Number(lastChild.children[5].querySelector('input').value)*Number(lastChild.children[6].querySelector('input').value),4);
+                    lastChild.children[7].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
                     lastChild.children[8].querySelector('input').value = product.childNodes[7].textContent
                     lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
-                    lastChild.children[10].querySelector('input').value = lastChild.children[7].querySelector('input').value
-                    lastChild.children[11].querySelector('input').value = Number(product.childNodes[11].textContent)>0?lastChild.children[7].querySelector('input').value:'0.00'
-                    lastChild.children[12].querySelector('input').value = Number(product.childNodes[12].textContent)>0?lastChild.children[7].querySelector('input').value:'0.00'
-                    lastChild.children[13].querySelector('input').value = Number(product.childNodes[13].textContent)>0?lastChild.children[7].querySelector('input').value:'0.00'
-                    lastChild.children[14].querySelector('input').value = Number(product.childNodes[14].textContent)>0?lastChild.children[7].querySelector('input').value:'0.00'
-                    lastChild.children[15].querySelector('input').value = Round(Number(lastChild.children[11].querySelector('input').value)*0.18,4)
+                    lastChild.children[10].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
+                    lastChild.children[12].querySelector('input').value = product.childNodes[12].textContent
+                    lastChild.children[13].querySelector('input').value = product.childNodes[13].textContent
+                    lastChild.children[14].querySelector('input').value = product.childNodes[14].textContent
+                    lastChild.children[11].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) - Number(lastChild.children[13].querySelector('input').value),4)
+                    lastChild.children[15].querySelector('input').value = Round(Number(product.childNodes[11].textContent) * 0.18, 4)
                     lastChild.children[16].querySelector('input').value = product.childNodes[16].textContent
-                    lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[7].querySelector('input').value)+Number(lastChild.children[15].querySelector('input').value),4)
+                    lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value), 4)
                 }
                 document.querySelector("#totalAmount").value = roundToTwo(roundToFour(total6()));
                 document.querySelector("#totalExcise").value = roundToTwo(roundToFour(total8()));
@@ -238,7 +238,7 @@ const func = async () => {
                         filters: true,
                         manualColumnResize: true,
                         colHeaders,
-                        columns: cond ? [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{type:'dropdown',data:'defaultText',source:['18%','','-','0']},{type:'dropdown',source:['+',''],data:'VATIncluded'}]:[{},{},{},{},{},{},{},{},{}],
+                        columns: cond ? [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{type:'dropdown',data:'defaultText',source:['18%','','-','0','ts']},{type:'dropdown',source:['+',''],data:'VATIncluded'}]:[{},{},{},{},{},{},{},{},{}],
                         colHeight:'auto',
                         licenseKey: 'non-commercial-and-evaluation',
                     });
@@ -290,7 +290,7 @@ const func = async () => {
                                              type:'dropdown',
                                              data:'defaultText',
                                              //renderer:'vatRenderer',
-                                             source:['18%','','-','0']
+                                             source:['18%','','-','0','ts']
                                          },
                                          {type:'dropdown',source:['+',''],data:'VATIncluded'}
                                         ]:[{},{},{},{},{},{}],
@@ -335,6 +335,7 @@ const func = async () => {
                 } else if (document.querySelector('div#page2')?.style?.display!=='none'){
                     for (let i = 0;i<hot.countRows();i++){
                         if (hot.getDataAtCell(i,1)){
+                            const percent = 0.05
                             document.querySelector("#addRow").click();
                             const lastChild = document.querySelector("#data_form > div.col-md-12 > div.panel.panel-white > div.panel-body > div.col-md-12.mt-20 > div > table > tbody").lastChild;
                             if (hot.getDataAtCell(i,0)){
@@ -347,6 +348,9 @@ const func = async () => {
                             lastChild.children[5].querySelector('input').value = hot.getDataAtCell(i,3)?.replace(/\s/g,'')?.replace(/\,/g,'.')
                             if (hot.getDataAtCell(i,6)?.includes('18%') && hot.getDataAtCell(i,7)?.includes('+')){
                                 lastChild.children[6].querySelector('input').value = Round(Number(hot.getDataAtCell(i,4)?.replace(/\,/g,'.')?.replace(/\s/g,''))/(1+0.18),4)
+                            } else if (hot.getDataAtCell(i,6)?.includes('ts') && hot.getDataAtCell(i,7)?.includes('+')){
+                                const price = Number(hot.getDataAtCell(i,4)?.replace(/\,/g,'.')?.replace(/\s/g,''));
+                                lastChild.children[6].querySelector('input').value = Round(price * (1 + percent)/(1 + 1.18 * percent),4)
                             } else {
                                 lastChild.children[6].querySelector('input').value = Round(Number(hot.getDataAtCell(i,4)?.replace(/\,/g,'.')?.replace(/\s/g,'')),4)
                             }
@@ -360,12 +364,17 @@ const func = async () => {
                                 lastChild.children[14].querySelector('input').value = lastChild.children[10].querySelector('input').value
                             } else if(hot.getDataAtCell(i,6)?.includes('-')) {
                                 lastChild.children[12].querySelector('input').value = lastChild.children[10].querySelector('input').value
-                            } else {
+                            } else if(hot.getDataAtCell(i,6)?.includes('ts')) {
+                                const count = Number(hot.getDataAtCell(i,3)?.replace(/\,/g,'.')?.replace(/\s/g,''));
+                                const price = Number(hot.getDataAtCell(i,4)?.replace(/\,/g,'.')?.replace(/\s/g,''));
+                                lastChild.children[13].querySelector('input').value = Round(count * price / (1 + 1.18*percent), 4)
+                                lastChild.children[11].querySelector('input').value = Round(lastChild.children[10].querySelector('input').value - lastChild.children[13].querySelector('input').value,4)
+                            }else {
                                 lastChild.children[13].querySelector('input').value = lastChild.children[10].querySelector('input').value
                             }
                             lastChild.children[15].querySelector('input').value = Round(Number(lastChild.children[11].querySelector('input').value)*0.18,4)
                             lastChild.children[16].querySelector('input').value = 0
-                            lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[7].querySelector('input').value)+Number(lastChild.children[15].querySelector('input').value),4)
+                            lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[7].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value),4)
                         }}
                 }
                 document.querySelector("#totalAmount").value = roundToTwo(roundToFour(total6()));
@@ -405,7 +414,7 @@ const func = async () => {
             observer.observe(document.querySelector("#regContent"),options)
         }
         if (window.location.href.includes('qaime.e-taxes.gov.az/')){
-            let token = document.cookie.match(/\stoken=(.*?);/)[1]
+            let token = document.cookie.match(/\stoken=(.*?);/)?.[1]
             try {
                 let btn = document.createElement('button')
                 btn.style.backgroundColor = 'transparent';
@@ -1538,37 +1547,40 @@ const func = async () => {
                         if (pckg && pckg.size >= 1024 ){
                             blob = pckg //new Blob([pckg], {type: 'text/plain'});
                         } else {
-                            try {
-                                url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
-                                let resp = await fetch(
-                                    url, {
-                                        headers: {
-                                            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                            'accept-language': 'en-US,en;q=0.9',
-                                            'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                            'sec-ch-ua-mobile': '?0',
-                                            'sec-fetch-dest': 'iframe',
-                                            'sec-fetch-mode': 'navigate',
-                                            'sec-fetch-site': 'same-origin',
-                                            'upgrade-insecure-requests': '1',
-                                        },
-                                        referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                                        referrerPolicy: 'strict-origin-when-cross-origin',
-                                        body: null,
-                                        method: 'GET',
-                                        mode: 'cors',
-                                        credentials: 'include',
+                            for (let ttt = 0; ttt < 10; ttt++){
+                                try {
+                                    url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
+                                    let resp = await fetch(
+                                        url, {
+                                            headers: {
+                                                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                                                'accept-language': 'en-US,en;q=0.9',
+                                                'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+                                                'sec-ch-ua-mobile': '?0',
+                                                'sec-fetch-dest': 'iframe',
+                                                'sec-fetch-mode': 'navigate',
+                                                'sec-fetch-site': 'same-origin',
+                                                'upgrade-insecure-requests': '1',
+                                            },
+                                            referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
+                                            referrerPolicy: 'strict-origin-when-cross-origin',
+                                            body: null,
+                                            method: 'GET',
+                                            mode: 'cors',
+                                            credentials: 'include',
+                                        }
+                                    ).then(resp=>resp.blob())
+                                    blob = new Blob([resp], { type: "application/zip" })
+                                    if (blob.size < 800){
+                                        continue
                                     }
-                                )
-                                blob = new Blob([await resp.blob()], { type: "application/zip" })
-                                if (blob.size < 800){
-                                    i--
-                                    continue
+                                    localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
+                                    break;
+                                } catch(error){
+                                    console.log(error)
                                 }
-                                localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
-                            } catch(error){
-                                console.log(error)
                             }
+
                         }
                         let xml;
                         if (dec.querySelector('td:nth-child(11)').textContent==='Kameral' || dec.querySelector('td:nth-child(11)').textContent==='Analoji'){
