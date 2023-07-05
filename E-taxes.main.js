@@ -145,7 +145,7 @@ const func = async () => {
                     lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
                     lastChild.children[10].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
                     lastChild.children[12].querySelector('input').value = product.childNodes[12].textContent
-                    lastChild.children[13].querySelector('input').value = product.childNodes[13].textContent
+                    lastChild.children[13].querySelector('input').value = Math.min(Number(product.childNodes[13].textContent), Number(lastChild.children[10].querySelector('input').value))
                     lastChild.children[14].querySelector('input').value = product.childNodes[14].textContent
                     lastChild.children[11].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) - Number(lastChild.children[13].querySelector('input').value),4)
                     lastChild.children[15].querySelector('input').value = Round(Number(product.childNodes[11].textContent) * 0.18, 4)
@@ -3307,7 +3307,7 @@ async function refundList(){
     if (!toMonth){
         toMonth = 12}
 
-    const th = ['Dövr','Say','Sıra','Əks-Sıra', 'Bəyannamənin tipi', 'Bəyannamənin növü', 'Bəyannamənin vəziyyəti', 'Bəyannamənin tarixi' ,'№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
+    const th = ['Dövr','Say','Sıra','Əks-Sıra', 'Seçim', 'Bəyannamənin tipi', 'Bəyannamənin növü', 'Bəyannamənin vəziyyəti', 'Bəyannamənin tarixi' ,'№','Tarix','Seriya','Nömrə','Sətir kodu', 'VÖEN','Adı','Malın ümumi dəyəri','Malın ƏDV dəyəri','Ödənilmiş ümumi dəyər','Ödənilmiş ƏDV']
     const table = document.createElement('table')
     const thead = document.createElement('thead')
     table.appendChild(thead)
@@ -3337,7 +3337,7 @@ async function refundList(){
                         "body": `year=${year}&type=01&month=${monthStr}`,
                         "method": "POST",})
                     .then(response=>response.json())
-                    .then(response=>response.declList)
+                    .then(response=>response.declList.filter(d=>!!d?.declSumTotalEDV))
                     //.then(response=>response.sort((x,y)=>(stringToDate(x.declDate)-stringToDate(y.declDate))))
                     .catch()
                     for (let k = 0; k < requests.length; k++){
@@ -3365,6 +3365,7 @@ async function refundList(){
                                             row.insertCell().innerHTML = requests.length
                                             row.insertCell().innerHTML = k + 1
                                             row.insertCell().innerHTML = requests.length - k
+                                            row.insertCell().innerHTML = ""
                                             row.insertCell().innerHTML = request.declType;
                                             row.insertCell().innerHTML = request.declType2;
                                             row.insertCell().innerHTML = request.declState;
@@ -3388,6 +3389,7 @@ async function refundList(){
                                             row.insertCell().innerHTML = requests.length
                                             row.insertCell().innerHTML = k + 1
                                             row.insertCell().innerHTML = requests.length - k
+                                            row.insertCell().innerHTML = ""
                                             row.insertCell().innerHTML = request.declType;
                                             row.insertCell().innerHTML = request.declType2;
                                             row.insertCell().innerHTML = request.declState;
