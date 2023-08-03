@@ -620,13 +620,29 @@ const func = async () => {
             uploadButton.type = 'button'
             uploadButton.id = 'uploadToPage'
             uploadButton.className = 'btn btn-xs bg-teal-800 btn-labeled'
-            uploadButton.style.margin = '15px 50% 10px 45%'
+            //uploadButton.style.margin = '15px 50% 10px 45%'
             const b = document.createElement('b')
             const i = document.createElement('i');
             i.className = 'icon-arrow-down16';
             b.appendChild(i);
             uploadButton.appendChild(b)
             uploadButton.appendChild(document.createTextNode('Əvəzləşməyə əlavə etmək.'))
+
+            const selectButton = document.createElement('button');
+            selectButton.type = 'button'
+            selectButton.id = 'select'
+            selectButton.className = 'btn btn-xs bg-teal-800 btn-labeled'
+            //selectButton.style.margin = '15px 50% 10px 45%'
+            {
+                const b = document.createElement('b')
+                const i = document.createElement('i');
+                i.className = 'icon-arrow-down16';
+                b.appendChild(i);
+                selectButton.appendChild(b)
+            }
+            selectButton.appendChild(document.createTextNode('E-qaimələri seçmək.'))
+            selectButton.addEventListener('click', selectHandler)
+
             const selectAllButton = document.createElement('button')
             selectAllButton.type = 'button'
             selectAllButton.id = 'selectAll'
@@ -726,7 +742,19 @@ const func = async () => {
                     document.querySelector("[id='filterButton-2']").textContent = 'Çap et'
                     document.querySelector("[id='filterButton-2']").addEventListener('click',refundList)
                     document.querySelector("#data_form > div:nth-child(2)").appendChild(div)
-                    document.querySelector("#data_form > div:nth-child(2)").appendChild(uploadButton)
+                    {
+
+                        const div = document.createElement('div')
+                        div.className = 'col-md-12'
+                        div.style.display = 'flex'
+                        div.style.justifyContent = 'center';
+                        div.style.gap = '10px'
+                        div.style.margin = '10px'
+                        document.querySelector("#data_form > div:nth-child(2)").appendChild(div)
+                        div.appendChild(uploadButton)
+                        div.appendChild(selectButton)
+                    }
+
                     document.querySelector("#data_form > div:nth-child(3) > div > div.panel-body > div:nth-child(1)").appendChild(selectAllButton)
                     hot = new Handsontable(div, {
                         dataSchema: {rowNo:'308'},
@@ -1074,6 +1102,33 @@ const func = async () => {
                 //document.querySelector("#filterButton").click()
             }
 
+            async function selectHandler(e){
+                let timeout = 100;
+                for (let i = 0; i < hot.countRows(); i++){
+                    await sleep(timeout)
+                    const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
+                    const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
+                    const No = ('000000' + hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
+                    if (!ser || !No){
+                        continue;
+                    }
+                    if (ser.length!==4 && ser.length!==2){
+                        hot.setDataAtCell(i,6, 'Qaimənin Seriyası düzgün deyil');
+                        continue;
+                    }
+                    const tbody = document.querySelector("#tableStriped2 > tbody");
+                    for (let j = 0; j < tbody.rows.length; j++){
+                        const tr = tbody.rows[j]
+                        const serTr = tr.querySelector('.qaimeSeria').textContent
+                        const numTr = tr.querySelector('.qaimeNum').textContent
+
+                        if (serTr === ser && numTr === No){
+                            tr.childNodes[1].childNodes[0].childNodes[0].className = 'checked'
+                            tr.childNodes[1].childNodes[0].childNodes[0].childNodes[0].checked = true
+                        }
+                    }
+                }
+            };
             async function toggle(e){
                 if (!e.target?.isChecked){
                     const rows = document.querySelector("#tableStriped2 > tbody").childNodes
