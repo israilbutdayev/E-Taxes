@@ -489,6 +489,23 @@ const func = async () => {
             showInfoButton.appendChild(checkbox)
             showInfoButton.appendChild(document.createTextNode('Qaimənin məlumatlarını göstər.'))
             checkbox.addEventListener('click',(e)=>toggleCheckbox(showInfoButton))
+
+            const showBaseInfoButton = document.createElement('button')
+            showBaseInfoButton.type = 'button'
+            showBaseInfoButton.className = 'btn btn-xs bg-teal-800 pull-right'
+            showBaseInfoButton.id = 'baseInfo'
+            showBaseInfoButton.style.marginRight = '10px'
+            showBaseInfoButton.checked = false;
+            showBaseInfoButton.addEventListener('click',(e)=>toggleCheckbox(e.target))
+            {
+                const checkbox = document.createElement('i');
+                checkbox.className = 'icon-minus3 position-left';
+                showBaseInfoButton.appendChild(checkbox)
+                showBaseInfoButton.appendChild(document.createTextNode('Əsas qaimə məlumatlarını göstər.'))
+                checkbox.addEventListener('click',(e)=>toggleCheckbox(showBaseInfoButton))
+            }
+
+
             const observer = new MutationObserver(mutations=>updateTable(mutations))
             const options = {attributes:true,characterData:true,childList:true,subtree:true}
             observer.observe(document.querySelector("body > div.page-container"),options)
@@ -580,10 +597,10 @@ const func = async () => {
             function toggleCheckbox (target){
                 if (target.checked){
                     target.checked = false;
-                    checkbox.className = 'icon-minus3 position-left'
+                    target.querySelector('i').className = 'icon-minus3 position-left'
                 } else {
                     target.checked = true;
-                    checkbox.className = 'icon-plus3 position-left'
+                    target.querySelector('i').className = 'icon-plus3 position-left'
                 }
             }
             async function append(count=1000){
@@ -591,6 +608,7 @@ const func = async () => {
                     document.querySelector("#filterButton").parentElement.appendChild(printButton)
                     printButton.addEventListener('click',printList)
                     document.querySelector("#filterButton").parentElement.appendChild(showInfoButton);
+                    document.querySelector("#filterButton").parentElement.appendChild(showBaseInfoButton);
                     const date = new Date()
                     const table = document.querySelector("#default-datatable")
                     document.querySelector("#startDate").value = new Date(date.getFullYear(),date.getMonth(),1,0,0).toLocaleDateString("ru") + ' 00:00'
@@ -3572,6 +3590,11 @@ async function printList(){
     lists.sort((a,b)=>(stringToDate(a.createdDate)-stringToDate(b.createdDate)) || a.voen - b.voen || (Number(a.vhfNum)-Number(b.vhfNum)));
     if (!document.querySelector("#userChecker").checked){
         const th = ['№','Tipi','Növü','Vəziyyəti','VÖEN','Ödəyici adı','Tarix','Seriya','Nömrəsi','Qeyd','Əlavə qeyd','Əsas məbləğ','Ödənilməli ƏDV','Yol vergisi','Yekun məbləğ']
+        if (document.querySelector('#baseInfo').checked){
+            th.push('Qaytarmanın tipi');
+            th.push('Əsas sənədin seriyası');
+            th.push('Əsas sənədin nömrəsi');
+        }
         const table = document.createElement('table')
         const thead = document.createElement('thead')
         table.appendChild(thead)
@@ -3608,6 +3631,56 @@ async function printList(){
                 row.insertCell().innerHTML = new String(list.malinUmumiEdv || 0 ).replace(/\./,',')
                 row.insertCell().innerHTML = new String(list.yolVergisi || 0).replace(/\./,',')
                 row.insertCell().innerHTML = new String(list.malinUmumiDeger || 0).replace(/\./,',')
+                if (document.querySelector('#baseInfo').checked){
+                    if(['docType_4','docType_13'].includes(list.erDocType)){
+                        let x = lists[i]
+                        let html;
+                        let response = await localforage.getItem(x.oid)
+                        if (response && new Blob([response]).size >= 4092){
+                            html = new DOMParser().parseFromString(b64DecodeUnicode(JSON.parse(response).htmlList[0]),'text/html')
+                        } else {
+                            let request = await fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
+                                'headers': {
+                                    'accept': 'text/plain, */*; q=0.01',
+                                    'accept-language': 'en-US,en;q=0.9',
+                                    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                    'sec-ch-ua': '\'Google Chrome\';v=\'87\', \' Not;A Brand\';v=\'99\', \'Chromium\';v=\'87\'',
+                                    'sec-ch-ua-mobile': '?0',
+                                    'sec-fetch-dest': 'empty',
+                                    'sec-fetch-mode': 'cors',
+                                    'sec-fetch-site': 'same-origin',
+                                    'x-requested-with': 'XMLHttpRequest'
+                                },
+                                'body': `docOidList%5B%5D=${x.oid}`,
+                                'method': 'POST',
+                                'mode': 'cors',
+                                'credentials': 'include'
+                            })
+                            for (let t = 0; t <= 20 ; t++){
+                                try {
+                                    await sleep(t * 1000)
+                                    if (request.status!==429){
+                                        let response = await request.text()
+                                        localforage.setItem(x.oid, response)
+                                        html = new DOMParser().parseFromString(b64DecodeUnicode(JSON.parse(response).htmlList[0]),'text/html')
+                                        break;
+                                    }
+                                } catch (error){
+                                    //console.log(error)
+                                }
+                            }
+                        }
+
+                        row.insertCell().innerHTML = html.querySelector("body > p:nth-child(4) > span:nth-child(14)")?.innerHTML || ''
+                        row.insertCell().innerHTML = html.querySelector("body > p:nth-child(4) > span:nth-child(17)")?.innerHTML || ''
+                        row.insertCell().innerHTML = html.querySelector("body > p:nth-child(4) > span:nth-child(20)")?.innerHTML || ''
+                    } else {
+                        row.insertCell().innerHTML = ''
+                        row.insertCell().innerHTML = ''
+                        row.insertCell().innerHTML = ''
+                    }
+
+                }
             } catch {
                 continue}
         }
