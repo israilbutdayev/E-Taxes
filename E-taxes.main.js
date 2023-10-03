@@ -141,9 +141,9 @@ const func = async () => {
                     lastChild.children[5].querySelector('input').value = product.childNodes[4].textContent
                     lastChild.children[6].querySelector('input').value = product.childNodes[5].textContent
                     lastChild.children[7].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
+                    lastChild.children[8].querySelector('input').value = product.childNodes[7].textContent
+                    lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
                     if (lastChild.children[8].style.display!=='none'){
-                        lastChild.children[8].querySelector('input').value = product.childNodes[7].textContent
-                        lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
                         lastChild.children[10].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
                         lastChild.children[12].querySelector('input').value = product.childNodes[12].textContent
                         lastChild.children[13].querySelector('input').value = Math.min(Number(product.childNodes[13].textContent), Number(lastChild.children[10].querySelector('input').value))
@@ -151,8 +151,8 @@ const func = async () => {
                         lastChild.children[11].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) - Number(lastChild.children[13].querySelector('input').value),4)
                         lastChild.children[15].querySelector('input').value = Round(Number(product.childNodes[11].textContent) * 0.18, 4)
                         lastChild.children[16].querySelector('input').value = product.childNodes[16].textContent
-                        lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value), 4)
                     }
+                    lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value), 4)
                 }
                 document.querySelector("#totalAmount").value = roundToTwo(roundToFour(total6()));
                 document.querySelector("#totalExcise").value = roundToTwo(roundToFour(total8()));
