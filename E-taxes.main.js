@@ -141,16 +141,18 @@ const func = async () => {
                     lastChild.children[5].querySelector('input').value = product.childNodes[4].textContent
                     lastChild.children[6].querySelector('input').value = product.childNodes[5].textContent
                     lastChild.children[7].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
-                    lastChild.children[8].querySelector('input').value = product.childNodes[7].textContent
-                    lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
-                    lastChild.children[10].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
-                    lastChild.children[12].querySelector('input').value = product.childNodes[12].textContent
-                    lastChild.children[13].querySelector('input').value = Math.min(Number(product.childNodes[13].textContent), Number(lastChild.children[10].querySelector('input').value))
-                    lastChild.children[14].querySelector('input').value = product.childNodes[14].textContent
-                    lastChild.children[11].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) - Number(lastChild.children[13].querySelector('input').value),4)
-                    lastChild.children[15].querySelector('input').value = Round(Number(product.childNodes[11].textContent) * 0.18, 4)
-                    lastChild.children[16].querySelector('input').value = product.childNodes[16].textContent
-                    lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value), 4)
+                    if (lastChild.children[8].style.display!=='none'){
+                        lastChild.children[8].querySelector('input').value = product.childNodes[7].textContent
+                        lastChild.children[9].querySelector('input').value = product.childNodes[8].textContent
+                        lastChild.children[10].querySelector('input').value = Round(Number(product.childNodes[4].textContent) * Number(product.childNodes[5].textContent), 4)
+                        lastChild.children[12].querySelector('input').value = product.childNodes[12].textContent
+                        lastChild.children[13].querySelector('input').value = Math.min(Number(product.childNodes[13].textContent), Number(lastChild.children[10].querySelector('input').value))
+                        lastChild.children[14].querySelector('input').value = product.childNodes[14].textContent
+                        lastChild.children[11].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) - Number(lastChild.children[13].querySelector('input').value),4)
+                        lastChild.children[15].querySelector('input').value = Round(Number(product.childNodes[11].textContent) * 0.18, 4)
+                        lastChild.children[16].querySelector('input').value = product.childNodes[16].textContent
+                        lastChild.children[17].querySelector('input').value = Round(Number(lastChild.children[10].querySelector('input').value) + Number(lastChild.children[15].querySelector('input').value), 4)
+                    }
                 }
                 document.querySelector("#totalAmount").value = roundToTwo(roundToFour(total6()));
                 document.querySelector("#totalExcise").value = roundToTwo(roundToFour(total8()));
@@ -414,40 +416,34 @@ const func = async () => {
             observer.observe(document.querySelector("#regContent"),options)
         }
         if (window.location.href.includes('qaime.e-taxes.gov.az/')){
-            let token = document.cookie.match(/\stoken=(.*?);/)?.[1]
-            try {
-                let btn = document.createElement('button')
-                btn.style.backgroundColor = 'transparent';
-                btn.style.width = '100%'
-                btn.textContent = 'Import'
-                btn.addEventListener('click',()=>{
-                    fetch('http://127.0.0.1:5000/import',{
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        method: 'POST',
-                        body: JSON.stringify({token: token})
+            for(let i = 0; i<= 100;i++){
+                try {
+                    await sleep(1000)
+                    let token = document?.cookie?.match(/\stoken=(.*?);/)?.[1]
+                    let btn = document.createElement('button')
+                    btn.style.backgroundColor = 'transparent';
+                    btn.style.width = '100%'
+                    btn.textContent = 'Import'
+                    btn.addEventListener('click',()=>{
+                        fetch('http://localhost:3000',{
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            method: 'POST',
+                            body: JSON.stringify({token: token})
+                        })
                     })
-                })
-                document.querySelector("#sidebarMenu").appendChild(btn)
-                let li = document.createElement('li')
-                document.querySelector("#sidebarMenu").appendChild(li)
-                li.textContent = token;
-                li.style.wordWrap = 'break-word'
-                li.style.color = 'transparent'
-            } catch(error) {
+                    document.querySelector("#sidebarMenu").appendChild(btn)
+                    let li = document.createElement('li')
+                    document.querySelector("#sidebarMenu").appendChild(li)
+                    li.textContent = token;
+                    li.style.wordWrap = 'break-word'
+                    li.style.color = 'transparent'
+                    console.log(token)
+                    break;
+                } catch(error) {
+                }
             }
-            console.log(token)
-            //let data = JSON.stringify({token})
-            //             fetch('http://127.0.0.1:2222/import',{
-            //                 "headers": {
-            //                     "accept": "application/json, */*; q=0.01",
-            //                     "content-type": "application/json; charset=UTF-8"
-            //                 },
-            //                 "body": data,
-            //                 "method": "POST",
-            //                 "mode": "no-cors",
-            //             })
         }
         if (['getDocList','getAllDocList','getDrafts'].some(x=>window.location.href.includes(x))){
             let interval = 15 * 60 * 1000;
@@ -1603,1748 +1599,1753 @@ const func = async () => {
                     }
                     let table,thead,tbody,th1,th2,th
                     for (let i = 0; i < decs.length; i++){
-                        let dec = decs[i];
-                        let url = ''
-                        const [USERID, PACKAGE_OID, PACKAGE_NAME] = dec.querySelector('a')
-                        .href.replace('javascript:downloadFile(', '')
-                        .replace(');', '')
-                        .replace(/'/g, '')
-                        .split(',')
-                        const parts = dec.title.split(' ')
-                        const xmlName = parts[2]
-                        const date = parts[5]
-                        const dateReverse = date.split('.').reverse().join('.')
-                        const time = parts[7]
-                        let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
-                        let blob;
-                        if (pckg && pckg.size >= 1024 ){
-                            blob = pckg //new Blob([pckg], {type: 'text/plain'});
-                        } else {
-                            for (let ttt = 0; ttt < 10; ttt++){
-                                try {
-                                    url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
-                                    let resp = await fetch(
-                                        url, {
-                                            headers: {
-                                                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                                'accept-language': 'en-US,en;q=0.9',
-                                                'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                                'sec-ch-ua-mobile': '?0',
-                                                'sec-fetch-dest': 'iframe',
-                                                'sec-fetch-mode': 'navigate',
-                                                'sec-fetch-site': 'same-origin',
-                                                'upgrade-insecure-requests': '1',
-                                            },
-                                            referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                                            referrerPolicy: 'strict-origin-when-cross-origin',
-                                            body: null,
-                                            method: 'GET',
-                                            mode: 'cors',
-                                            credentials: 'include',
+                        try {
+                            let dec = decs[i];
+                            let url = ''
+                            const [USERID, PACKAGE_OID, PACKAGE_NAME] = dec.querySelector('a')
+                            .href.replace('javascript:downloadFile(', '')
+                            .replace(');', '')
+                            .replace(/'/g, '')
+                            .split(',')
+                            const parts = dec.title.split(' ')
+                            const xmlName = parts[2]
+                            const date = parts[5]
+                            const dateReverse = date.split('.').reverse().join('.')
+                            const time = parts[7]
+                            let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
+                            let blob;
+                            if (pckg && pckg.size >= 1024 ){
+                                blob = pckg //new Blob([pckg], {type: 'text/plain'});
+                            } else {
+                                for (let ttt = 0; ttt < 10; ttt++){
+                                    try {
+                                        url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
+                                        let resp = await fetch(
+                                            url, {
+                                                headers: {
+                                                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                                                    'accept-language': 'en-US,en;q=0.9',
+                                                    'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+                                                    'sec-ch-ua-mobile': '?0',
+                                                    'sec-fetch-dest': 'iframe',
+                                                    'sec-fetch-mode': 'navigate',
+                                                    'sec-fetch-site': 'same-origin',
+                                                    'upgrade-insecure-requests': '1',
+                                                },
+                                                referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
+                                                referrerPolicy: 'strict-origin-when-cross-origin',
+                                                body: null,
+                                                method: 'GET',
+                                                mode: 'cors',
+                                                credentials: 'include',
+                                            }
+                                        ).then(resp=>resp.blob())
+                                        blob = new Blob([resp], { type: "application/zip" })
+                                        if (blob.size < 800){
+                                            continue
                                         }
-                                    ).then(resp=>resp.blob())
-                                    blob = new Blob([resp], { type: "application/zip" })
-                                    if (blob.size < 800){
-                                        continue
+                                        localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
+                                        break;
+                                    } catch(error){
+                                        console.log(error)
                                     }
-                                    localforage.setItem(PACKAGE_OID+'|'+PACKAGE_NAME, blob)
-                                    break;
-                                } catch(error){
+                                }
+
+                            }
+                            let xml;
+                            if (dec.querySelector('td:nth-child(11)').textContent==='Kameral' || dec.querySelector('td:nth-child(11)').textContent==='Analoji'){
+                                const zip = new JSZip()
+                                const text = await new Response(blob).text()
+                                xml = new DOMParser().parseFromString(text,'text/xml')
+                                const decYear = xml.querySelector('yil')?.textContent
+                                const decMonth = xml.querySelector('ay')?.textContent
+                                const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
+                                const decType = dec.querySelector('td:nth-child(11)').textContent;
+                                if (dl){
+                                    if (!onePaket){
+                                        const zip = new JSZip()
+                                        zip.file(xmlName + '.xml' , blob)
+                                        const output = await zip.generateAsync({type:"blob"})
+                                        download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`, output)
+                                        sleep(100)
+                                    } else {
+                                        Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
+                                    }}
+                            } else {
+                                const zip = new JSZip()
+                                try {
+                                    const decls = await zip.loadAsync(blob)
+                                    const files = await decls.files
+                                    for (let file of Object.values(files)){
+                                        const data = await file.async('text')
+                                        if (data.includes('Beyanname-Manifest-Version: 1.0')){
+                                            continue;
+                                        }
+                                        if (file.name!==xmlName){
+                                            decls.remove(file.name)
+                                            continue
+                                        }
+                                        xml = new DOMParser().parseFromString(data,'text/xml')
+                                        const decYear = xml.querySelector('yil')?.textContent
+                                        const decMonth = xml.querySelector('ay')?.textContent
+                                        const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
+                                        const decType = dec.querySelector('td:nth-child(11)').textContent;
+                                        if (dl){
+                                            if (!onePaket){
+                                                const output = await zip.generateAsync({type:"blob"})
+                                                download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`,output)
+                                                sleep(100)
+                                            } else {
+                                                const decBlob = new Blob([data],{type: 'text/plain'})
+                                                Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
+                                            }
+                                        }
+                                    }
+                                }catch(error){
                                     console.log(error)
                                 }
                             }
 
-                        }
-                        let xml;
-                        if (dec.querySelector('td:nth-child(11)').textContent==='Kameral' || dec.querySelector('td:nth-child(11)').textContent==='Analoji'){
-                            const zip = new JSZip()
-                            const text = await new Response(blob).text()
-                            xml = new DOMParser().parseFromString(text,'text/xml')
-                            const decYear = xml.querySelector('yil')?.textContent
-                            const decMonth = xml.querySelector('ay')?.textContent
-                            const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
-                            const decType = dec.querySelector('td:nth-child(11)').textContent;
-                            if (dl){
-                                if (!onePaket){
-                                    const zip = new JSZip()
-                                    zip.file(xmlName + '.xml' , blob)
-                                    const output = await zip.generateAsync({type:"blob"})
-                                    download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`, output)
-                                    sleep(100)
-                                } else {
-                                    Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName + '.xml' , blob)
-                                }}
-                        } else {
-                            const zip = new JSZip()
-                            try {
-                                const decls = await zip.loadAsync(blob)
-                                const files = await decls.files
-                                for (let file of Object.values(files)){
-                                    const data = await file.async('text')
-                                    if (data.includes('Beyanname-Manifest-Version: 1.0')){
-                                        continue;
+                            if (exp) {
+                                let XMLDoc = xml;
+                                if (XMLDoc.querySelector('beyanname').attributes['kodVer'].value!=='VAT_1'){
+                                    continue
+                                }
+                                function getElement(nodeValue, parent = 'beyanname', returnNode = "deyer", nodeName = "gosterici") {
+                                    if (Number(XMLDoc.querySelector("yil")) < 2020 && returnNode === "deyer") {
+                                        returnNode = "meblag";
                                     }
-                                    if (file.name!==xmlName){
-                                        decls.remove(file.name)
-                                        continue
+                                    try {
+                                        return [...XMLDoc.querySelector(parent).querySelectorAll(nodeName)]
+                                            .filter((x) => x.textContent == String(nodeValue))[0]
+                                            .parentNode.querySelector(returnNode).textContent;
+                                    } catch (error) {
+                                        return 0;
                                     }
-                                    xml = new DOMParser().parseFromString(data,'text/xml')
-                                    const decYear = xml.querySelector('yil')?.textContent
-                                    const decMonth = xml.querySelector('ay')?.textContent
-                                    const type = [...document.querySelector('[name="beyannameTanim"]').options].filter(x=>x.value===xml.querySelector('beyanname').getAttribute('kodVer').replace(/_1/g,''))[0].textContent
-                                    const decType = dec.querySelector('td:nth-child(11)').textContent;
-                                    if (dl){
-                                        if (!onePaket){
-                                            const output = await zip.generateAsync({type:"blob"})
-                                            download(`${vergiNo} - ${decYear}${decMonth ? ('.' + String('0' + decMonth).slice(-2)):''} - ${decType} - ${dateReverse} ${time} - ${date} ${time}.zip`,output)
-                                            sleep(100)
+                                }
+                                const props = {
+                                    deyer: "Təqdim edilmiş mal iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
+                                    dedv: "Təqdim edilmiş mal iş və xidmətlərin Əlavə dəyər vergisi məbləği",
+                                    edvsiz: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
+                                    edv: "Daxil olmuş məbləğ (Əlavə dəyər vergisi məbləği)",
+                                };
+
+                                let structure = {
+                                    kodlar: {
+                                        aramaSecenekleri: {
+                                            secenek: {
+                                                aciklama: "YGB-nin №-si",
+                                                kod: "2",
+                                            },
+                                        },
+                                        umumiGruplar: {
+                                            umumiGrup: [
+                                                {
+                                                    kod: "1",
+                                                    ad: "Vergi Məcəlləsi çərçivəsində fəaliyyət göstərən vergi ödəyicisi",
+                                                },
+                                                {
+                                                    kod: "2",
+                                                    ad: "Qanunla çərçivəsində fəaliyyət göstərən xüsusi vergi recimli meəssisələr",
+                                                },
+                                            ],
+                                        },
+                                        faturaTurleri: {
+                                            faturaTuru: {
+                                                kod: "1",
+                                                ad: "Gömrük bəyannaməsi",
+                                            },
+                                        },
+                                        edvGostericiler: {
+                                            edvGosterici: [
+                                                {
+                                                    kod: "301",
+                                                    sign: "+",
+                                                    kod2: "1001",
+                                                    ad: "301. ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1",
+                                                    sign: "+",
+                                                    kod2: "1101",
+                                                    ad: "301.1 Malların təqdim edilməsi, işlərin görülməsi, xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.2",
+                                                    sign: "+",
+                                                    kod2: "1103",
+                                                    ad: "301.2 Azərbaycan Respublikası ərazisində istehsal olunan kənd təsərrüfatı məhsullarının pərakəndə satışı üzrə ƏDV-nə cəlb olunan ticarət əlavəsi",
+                                                },
+                                                {
+                                                    kod: "302",
+                                                    sign: "+",
+                                                    kod2: "1002",
+                                                    ad: "302. ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "303",
+                                                    sign: "+",
+                                                    kod2: "1003",
+                                                    ad: "303. ƏDV-dən azad olunan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "304",
+                                                    sign: "+",
+                                                    kod2: "1004",
+                                                    ad: "304. ƏDV-nə 20 faiz dərəcə ilə tutulan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "305",
+                                                    sign: "+",
+                                                    kod2: "1005",
+                                                    ad: "305. Əməliyyatlar üzrə CƏMİ",
+                                                },
+                                                {
+                                                    kod: "306",
+                                                    sign: "+",
+                                                    kod2: "1006",
+                                                    ad: "306. Vergi Məcəlləsinin 169-cu maddəsinə əsasən qeyri-rezidentin göstərdiyi xidmətlər və ya gördüyü işlər üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "306.1",
+                                                    sign: "+",
+                                                    kod2: "1108",
+                                                    ad: "306.1 ƏDV-nin məqsədləri üçün qeydiyyata alınmayan qeyri-rezidentin göstərdiyi xidmətlər və ya gördüyü işlər üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "306.2",
+                                                    sign: "+",
+                                                    kod2: "1109",
+                                                    ad: "306.2 Elektron ticarət qaydasında işlərin və xidmətlərin vergi ödəyicisi kimi uçotda olmayan alıcısının ödəmələri ",
+                                                },
+                                                {
+                                                    kod: "306.3",
+                                                    sign: "+",
+                                                    kod2: "1110",
+                                                    ad: "306.3 Azərbaycan Respublikasının hüdudlarından kənarda elektron qaydada təşkil olunan lotereyaların, digər yarışların və müsabiqələrin iştirakçısının ödənişi üzrə ",
+                                                },
+                                            ],
+                                        },
+                                        edvDebitorBorcGostericiler: {
+                                            edvBorcGosterici: [
+                                                {
+                                                    kod: "307",
+                                                    sign: "+",
+                                                    kod2: "1400",
+                                                    ad: "307 Debitor borclar üzrə",
+                                                },
+                                                {
+                                                    kod: "307.1",
+                                                    sign: "+",
+                                                    kod2: "1401",
+                                                    ad: "307.1 ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "307.2",
+                                                    sign: "+",
+                                                    kod2: "1402",
+                                                    ad: "307.2 ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "307.3",
+                                                    sign: "+",
+                                                    kod2: "1403",
+                                                    ad: "307.3 ƏDV-dən azad olunan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "307-1",
+                                                    sign: "+",
+                                                    kod2: "1404",
+                                                    ad: "307-1 01.01.2020-ci il tarixə olan debitor borclar üzrə",
+                                                },
+                                                {
+                                                    kod: "307-1.1",
+                                                    sign: "+",
+                                                    kod2: "1405",
+                                                    ad: "307-1.1 ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "307-1.2",
+                                                    sign: "+",
+                                                    kod2: "1406",
+                                                    ad: "307-1.2 ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "307-1.3",
+                                                    sign: "+",
+                                                    kod2: "1407",
+                                                    ad: "307-1.3 ƏDV-dən azad olunan əməliyyatlar üzrə",
+                                                },
+                                            ],
+                                        },
+                                        edvAvazGostericiler: {
+                                            edvAvazGosterici: [
+                                                {
+                                                    kod: "308",
+                                                    sign: "+",
+                                                    kod2: "1008",
+                                                    ad: "308. VM 175.1-ci maddəsinə əsasən alınmış elektron qaimə-fakturalar (elektron vergi hesab-fakturalar) üzrə nağdsız qaydada ödənilmiş məbləğ",
+                                                },
+                                                {
+                                                    kod: "308.1",
+                                                    sign: "+",
+                                                    kod2: "1420",
+                                                    ad: "308.1 Gəlirdən birbaşa çıxılmayan kapital xarakterli xərclər üzrə əvəzləşdirilmələr (ƏDV nəzərə alınmadan)",
+                                                },
+                                                {
+                                                    kod: "309",
+                                                    sign: "+",
+                                                    kod2: "1009",
+                                                    ad: "309. 01.01.2001-ci il tarixinə olan borcların nağdsız qaydada ödənilmiş məbləği",
+                                                },
+                                                {
+                                                    kod: "310",
+                                                    sign: "+",
+                                                    kod2: "1010",
+                                                    ad: "310. İdxalda ƏDV-yə cəlb olunmuş mallara(işlərə,xidmətlərə) görə ödənilmiş məbləğ",
+                                                },
+                                                {
+                                                    kod: "310.1",
+                                                    sign: "+",
+                                                    kod2: "1510",
+                                                    ad: "310.1 Gəlirdən birbaşa çıxılmayan kapital xarakterli xərclər üzrə əvəzləşdirilmələr (ƏDV nəzərə alınmadan)",
+                                                },
+                                                {
+                                                    kod: "311",
+                                                    sign: "+",
+                                                    kod2: "1011",
+                                                    ad: "311. İdxalda ƏDV-dən azad olunan mallara(işlərə,xidmətlərə) görə ödənilmiş məbləğ",
+                                                },
+                                                {
+                                                    kod: "312",
+                                                    sign: "+",
+                                                    kod2: "1012",
+                                                    ad: "312. Vergi Məcəlləsinin 169.4-cü maddəsinə əsasən qeyri-rezidentə ödənilmiş məbləğ",
+                                                },
+                                                {
+                                                    kod: "313",
+                                                    sign: "+",
+                                                    kod2: "1017",
+                                                    ad: "313. Vergi Məcəlləsi 175.2-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
+                                                },
+                                                {
+                                                    kod: "314",
+                                                    sign: "+",
+                                                    kod2: "1013",
+                                                    ad: "314. Vergi Məcəlləsinin 175.3-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
+                                                },
+                                                {
+                                                    kod: "315",
+                                                    sign: "-",
+                                                    kod2: "1014",
+                                                    ad: "315. Vergi Məcəlləsinin 175.4-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
+                                                },
+                                                {
+                                                    kod: "316",
+                                                    sign: "+",
+                                                    kod2: "1015",
+                                                    ad: "316. ƏDV-yə sıfır(0) faiz dərəcəsi ilə ödənilmiş məbləğ",
+                                                },
+                                                {
+                                                    kod: "317",
+                                                    sign: "-",
+                                                    kod2: "1016",
+                                                    ad: "317. Əməliyyatlar üzrə CƏMİ",
+                                                },
+                                            ],
+                                        },
+                                        edvDegisGostericiler: {
+                                            edvDegisGosterici: [
+                                                {
+                                                    kod: "318",
+                                                    sign: "+",
+                                                    kod2: "1017",
+                                                    ad: "318. ƏDV-yə cəlb olunan ARTIRILAN dövriyyələr üzrə ƏDV-nin hesablanması ",
+                                                },
+                                                {
+                                                    kod: "319",
+                                                    sign: "-",
+                                                    kod2: "1018",
+                                                    ad: "319. ƏDV-yə cəlb olunan AZALDILAN dövriyyələr üzrə ƏDV-nin hesablanması ",
+                                                },
+                                                {
+                                                    kod: "319.1",
+                                                    sign: "-",
+                                                    kod2: "1035",
+                                                    ad: "319.1. ƏDV-yə cəlb olunan AZALDILAN dövriyyələr üzrə ƏDV-nin hesablanması",
+                                                },
+                                                {
+                                                    kod: "319.2",
+                                                    sign: "-",
+                                                    kod2: "1036",
+                                                    ad: "319.2. Vergi Məcəlləsinin 165.5-ci maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞD ödənişlər)",
+                                                },
+                                                {
+                                                    kod: "319.3",
+                                                    sign: "-",
+                                                    kod2: "1045",
+                                                    ad: "319.3. Vergi Məcəlləsinin 165.5-ci maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞDSIZ ödənişlər)",
+                                                },
+                                                {
+                                                    kod: "319.4",
+                                                    sign: "-",
+                                                    kod2: "1430",
+                                                    ad: "319.4. Vergi Məcəlləsinin 165.6-cı maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞDSIZ ödənişlər)",
+                                                },
+                                                {
+                                                    kod: "320",
+                                                    sign: "+",
+                                                    kod2: "1019",
+                                                    ad: "320. ƏDV-yə sıfır (0) faiz dərəcəsi ilə cəlb olunan əməliyyatlar üzrə ARTIRILAN dövriyyə",
+                                                },
+                                                {
+                                                    kod: "321",
+                                                    sign: "+",
+                                                    kod2: "1020",
+                                                    ad: "321. ƏDV-yə sıfır (0) faiz dərəcəsi ilə cəlb olunan əməliyyatlar üzrə AZALDILAN dövriyyə",
+                                                },
+                                                {
+                                                    kod: "322",
+                                                    sign: "+",
+                                                    kod2: "1021",
+                                                    ad: "322. ƏDV-dən azad olunan əməliyyatlar üzrə ARTIRILAN dövriyyə",
+                                                },
+                                                {
+                                                    kod: "323",
+                                                    sign: "+",
+                                                    kod2: "1022",
+                                                    ad: "323. ƏDV-dən azad olunan əməliyyatlar üzrə AZALDILAN dövriyyə",
+                                                },
+                                                {
+                                                    kod: "324",
+                                                    sign: "+",
+                                                    kod2: "1431",
+                                                    ad: "324. Əvəzləşdirilən əməliyyatların AZALDILMASINA görə ƏDV-nin bərpa edilən məbləği",
+                                                },
+                                                {
+                                                    kod: "325",
+                                                    sign: "+",
+                                                    kod2: "1432",
+                                                    ad: "325. Əvəzləşdirilən əməliyyatların ARTIRILMASINA görə ƏDV-nin bərpa edilən məbləği",
+                                                },
+                                            ],
+                                        },
+                                        edvHesaplasmalar: {
+                                            edvHesaplasma: [
+                                                {
+                                                    kod: "326",
+                                                    sign: "+",
+                                                    kod2: "1023",
+                                                    ad: "326. Büdcəyə ödənilməlidir",
+                                                },
+                                                {
+                                                    kod: "327",
+                                                    sign: "+",
+                                                    kod2: "1092",
+                                                    ad: "327. Büdcədən qaytarılır",
+                                                },
+                                            ],
+                                        },
+                                        ilave1Gostericiler: {
+                                            ilave1Gosterici: [
+                                                {
+                                                    kod: "5001",
+                                                    sign: "+",
+                                                    kod2: "1025",
+                                                    ad: "Cari hesabat dövründə əldə edilmiş Yük Gömrük Bəyannaməsi üzrə alınmış malın ƏDV-siz ümumi dəyəri və ƏDV məbləğlərinin CƏMİ",
+                                                },
+                                            ],
+                                        },
+                                        ilave1GostericilerEvvel: {
+                                            ilave1GostericiEvvel: [
+                                                {
+                                                    kod: "5003",
+                                                    sign: "+",
+                                                    kod2: "1029",
+                                                    ad: "Əvvəlki dövrlərdə əldə edilmiş Yük Gömrük Bəyannaməsi üzrə alınmış və ƏDV məbləği ödənilmiş  malın (işin, xidmətin) ƏDV-siz ümumi dəyər və ƏDV məbləğlərinin CƏMİ",
+                                                },
+                                                {
+                                                    kod: "5005",
+                                                    sign: "+",
+                                                    kod2: "1032",
+                                                    ad: "YÜK GÖMRÜK BƏYANNAMƏLƏRİ üzrə alınmış malın(işin,xidmətin) cari hesabat dövründə ödənilmiş ƏDV məbləğlərinin YEKUNU",
+                                                },
+                                            ],
+                                        },
+                                        ilave1Sebepler: {
+                                            ilave1Sebep: [
+                                                {
+                                                    kod: "1",
+                                                    ad: "Vergi hesab fakturası",
+                                                },
+                                                {
+                                                    kod: "2",
+                                                    ad: "Gömrük bəyannaməsi",
+                                                },
+                                            ],
+                                        },
+                                        ilave3Bolum2Gostericiler: {
+                                            ilave3Bolum2Gosterici: [
+                                                {
+                                                    kod: "301.1",
+                                                    sign: "+",
+                                                    kod2: "1091",
+                                                    ad: "301.1 Təqdim edilmiş mallar(işlər,xidmətlər) üzrə ƏDV-nə cəlb olunan dövriyyələrin məbləği CƏMİ",
+                                                },
+                                                {
+                                                    kod: "301.1.1",
+                                                    sign: "+",
+                                                    kod2: "1037",
+                                                    ad: "301.1.1 Malların təqdim edilməsindən gəlir",
+                                                },
+                                                {
+                                                    kod: "301.1.1.1",
+                                                    sign: "+",
+                                                    kod2: "1038",
+                                                    ad: "301.1.1.1 Girov əmlakların(malların) təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.1.2",
+                                                    sign: "+",
+                                                    kod2: "1039",
+                                                    ad: "301.1.1.2 Əmək haqqının əvəzınə təqdim edilmiş mallar",
+                                                },
+                                                {
+                                                    kod: "301.1.1.3",
+                                                    sign: "+",
+                                                    kod2: "1040",
+                                                    ad: "301.1.1.3 Aqent vasitəsi ilə təqdim edilmiş mallar üzrə gəlirlər",
+                                                },
+                                                {
+                                                    kod: "301.1.1.4",
+                                                    sign: "+",
+                                                    kod2: "1041",
+                                                    ad: "301.1.1.4 Müstəqil ƏDV ödəyicisi olan struktur bölmələri arasında təqdim edilmiş mallar",
+                                                },
+                                                {
+                                                    kod: "301.1.1.5",
+                                                    sign: "+",
+                                                    kod2: "1042",
+                                                    ad: "301.1.1.5 Haqqı ödənilməklə və ya əvəzsiz qaydada öz işçilərinə və digər şəxslərə mal verilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.1.6",
+                                                    sign: "+",
+                                                    kod2: "1043",
+                                                    ad: "301.1.1.6 Barter əməliyyatları üzrə malların təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.1.7",
+                                                    sign: "+",
+                                                    kod2: "1044",
+                                                    ad: "301.1.1.7 Digər malların təqdim edilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.1.8",
+                                                    sign: "+",
+                                                    kod2: "1046",
+                                                    ad: "301.1.1.8 Təqdim ediləcək malların hesabına əvvəlcədən alınmış ödənişləri",
+                                                },
+                                                {
+                                                    kod: "301.1.1.9",
+                                                    sign: "+",
+                                                    kod2: "9001",
+                                                    ad: "301.1.1.9  Daşınan və daşınmaz əmlakın təqdim edilməsindən gəlirlər",
+                                                },
+                                                {
+                                                    kod: "301.1.1.10",
+                                                    sign: "+",
+                                                    kod2: "1216",
+                                                    ad: "301.1.1.10 Mallar təqdim edildikdən sonra verilmiş borclar",
+                                                },
+                                                {
+                                                    kod: "301.1.1.11",
+                                                    sign: "+",
+                                                    kod2: "1217",
+                                                    ad: "301.1.1.11 Mallar təqdim edilənədək verilmiş borclar",
+                                                },
+                                                {
+                                                    kod: "301.1.1.12",
+                                                    sign: "+",
+                                                    kod2: "1218",
+                                                    ad: "301.1.1.12 Malların təqdim edilməsi üzrə yaranan debitor borclar üzrə iddia müddətinin bitməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.1.13",
+                                                    sign: "+",
+                                                    kod2: "1219",
+                                                    ad: "301.1.1.13 Qarşılıqlı hesablaşmalar aparıldıqda öhdəliyin ləğv edilməsi və ya ödənilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.1.14",
+                                                    sign: "+",
+                                                    kod2: "1252",
+                                                    ad: "301.1.1.14 Tələb hüququ güzəşt edildikdə \u2013 güzəşt edilən məbləğ",
+                                                },
+                                                {
+                                                    kod: "301.1.2",
+                                                    sign: "+",
+                                                    kod2: "1055",
+                                                    ad: "301.1.2 İşlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.1",
+                                                    sign: "+",
+                                                    kod2: "1056",
+                                                    ad: "301.1.2.1 Daşınan və daşınmaz əmlakın icarəyə verilməsindən gəlirlər",
+                                                },
+                                                {
+                                                    kod: "301.1.2.2",
+                                                    sign: "+",
+                                                    kod2: "1057",
+                                                    ad: "301.1.2.2 Əmək haqqının  əvəzinə işlərin görülməsi və  xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.3",
+                                                    sign: "+",
+                                                    kod2: "1058",
+                                                    ad: "301.1.2.3 Müstəqil ƏDV ödəyicisi olan struktur bölmələri arasında işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.4",
+                                                    sign: "+",
+                                                    kod2: "1059",
+                                                    ad: "301.1.2.4 Əvəzsiz işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.5",
+                                                    sign: "+",
+                                                    kod2: "1060",
+                                                    ad: "301.1.2.5 Barter əməliyyatları üzrə işlərin görülməsi və xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.2.6",
+                                                    sign: "+",
+                                                    kod2: "1061",
+                                                    ad: "301.1.2.6 Sair işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.7",
+                                                    sign: "+",
+                                                    kod2: "1063",
+                                                    ad: "301.1.2.7 Təqdim ediləcək işlərin və xidmətlərin hesabına əvvəlcədən alınmış ödənişləri",
+                                                },
+                                                {
+                                                    kod: "301.1.2.8",
+                                                    sign: "+",
+                                                    kod2: "1220",
+                                                    ad: "301.1.2.8 Emal əməliyyatları üzrə işlərin görülməsi və xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.2.9",
+                                                    sign: "+",
+                                                    kod2: "1221",
+                                                    ad: "301.1.2.9 İşlər, xidmətlər təqdim edildikdən sonra verilmiş borclar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.10",
+                                                    sign: "+",
+                                                    kod2: "1222",
+                                                    ad: "301.1.2.10 İşlər, xidmətlər təqdim edilənədək verilmiş borclar",
+                                                },
+                                                {
+                                                    kod: "301.1.2.11",
+                                                    sign: "+",
+                                                    kod2: "1223",
+                                                    ad: "301.1.2.11 Tələb hüququ güzəşt edildikdə \u2013 güzəşt edilən məbləğ",
+                                                },
+                                                {
+                                                    kod: "301.1.2.12",
+                                                    sign: "+",
+                                                    kod2: "1224",
+                                                    ad: "301.1.2.12 İşlərin, xidmətlərin təqdim edilməsi üzrə yaranan debitor borclar üzrə iddia müddətinin bitməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.2.13",
+                                                    sign: "+",
+                                                    kod2: "1225",
+                                                    ad: "301.1.2.13 Qarşılıqlı hesablaşmalar aparıldıqda öhdəliyin ləğv edilməsi və ya ödənilməsi",
+                                                },
+                                                {
+                                                    kod: "301.1.3",
+                                                    sign: "+",
+                                                    kod2: "1094",
+                                                    ad: "301.1.3 Vergi Məcəlləsinin 159.5-ci maddəsinə əsasən ƏDV tutulan əməliyyat sayılan mallardan (işlərdən, xidmətlərdən) qeyri-kommersiya məqsədləri üçün istifadə edilməsi, fövqəladə hallardan başqa malların itməsi, əksik gəlməsi, xarab olması, tam amortizasiya olunmadan uçotdan silinməsi və ya oğurlanması üzrə məbləğ",
+                                                },
+                                                {
+                                                    kod: "301.1.4",
+                                                    sign: "+",
+                                                    kod2: "1064",
+                                                    ad: "301.1.4 Vergi Məcəlləsinin 159.6-cü maddəsinə əsasən ƏDV üzrə qeydiyyatı ləğv edilmə tarixinə olan mal qalığının məbləği",
+                                                },
+                                                {
+                                                    kod: "301.1.5",
+                                                    sign: "+",
+                                                    kod2: "1095",
+                                                    ad: "301.1.5 VM-nin 159.10-cu maddəsinə əsasən bu Məcəllənin 164.1.11-ci, 164.1.15-ci, 164.1.16-cı və 164.1.20-164.1.25-ci, 164.1.33-cü və 164.1.35-ci maddələrinə və 164-cü maddənin digər bəndlərinə uyğun olaraq ƏDV-dən azad edilən idxal mallarının Azərbaycan Respublikasının ərazisində təqdim edilməsi ilə əlaqədar vergi tutulan əməliyyatlar üzrə məbləğ",
+                                                },
+                                                {
+                                                    kod: "301-1",
+                                                    sign: "+",
+                                                    kod2: "1226",
+                                                    ad: "301-1 Elektron ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301-2",
+                                                    sign: "+",
+                                                    kod2: "1227",
+                                                    ad: "301-2 Pərakəndə ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "301-3",
+                                                    sign: "+",
+                                                    kod2: "1228",
+                                                    ad: "301-3 Topdan ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                            ],
+                                        },
+                                        ilave3Bolum3Gostericiler: {
+                                            ilave3Bolum3Gosterici: [
+                                                {
+                                                    kod: "326",
+                                                    sign: "+",
+                                                    kod2: "1065",
+                                                    ad: "326. VM-nin 159.2-ci maddəsinə əsasən bu Məcəllənin 167-ci və 168-ci maddələrinə uyğun olaraq  Azərbaycan Respublikasınını hüdudlarından kənarda malların təqdim edilməsi, xidmətlərin göstərilməsi və işlər görülməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "327",
+                                                    sign: "+",
+                                                    kod2: "1066",
+                                                    ad: "327. VM-nin 159.5-ci maddəsinə əsasən  fövqəladə hallarda malların itməsi, əskik gəlməsi, xarab olması, tam amortizasiya olunmadan uçotdan silinməsi və ya oğurlanması üzrə məbləğ",
+                                                },
+                                                {
+                                                    kod: "328",
+                                                    sign: "+",
+                                                    kod2: "1067",
+                                                    ad: "328. Vergi Məcəlləsinin 159.7-ci maddəsinə əsasən vergiyə cəlb olunmayan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "329",
+                                                    sign: "+",
+                                                    kod2: "1068",
+                                                    ad: "329. Vergi Məcəlləsinin 160-ci maddəsinə əsasən müəssisənin təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "330",
+                                                    sign: "+",
+                                                    kod2: "1120",
+                                                    ad: "330. Müstəqil sahibkarlıq fəaliyyəti çərçivəsində malların göndərilməsi, işlərin görülməsi və xidmətlərin göstərilməsi sayılmayan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "331",
+                                                    sign: "+",
+                                                    kod2: "1121",
+                                                    ad: "331. Rüsumsuz ticarət mağazalarında (Duty-Free) malların təqdim edilməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "332",
+                                                    sign: "+",
+                                                    kod2: "1230",
+                                                    ad: "332. Qeyri-sahibkarlıq fəaliyyəti üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "333",
+                                                    sign: "+",
+                                                    kod2: "1231",
+                                                    ad: "333. Pul vəsaitləri üzrə əməliyyatlar (maliyyə xidmətləri istisna olmaqla)",
+                                                },
+                                                {
+                                                    kod: "334",
+                                                    sign: "+",
+                                                    kod2: "1232",
+                                                    ad: "334. Qeyri-maddi aktivlər və torpaqların təqdim edilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "335",
+                                                    sign: "+",
+                                                    kod2: "1236",
+                                                    ad: "335. VM-nin 224.8-ci maddəsinə əsasən Bu Məcəllənin 222.5.5-ci maddəsində göstərilən fəaliyyətlə məşğul olan şəxslər tərəfindən alınmış ərzaq və hazırlanmış qida məhsullarının xarab olması üzrə məbləğ(1 yanvar 2021-ci il tarixədək)",
+                                                },
+                                            ],
+                                        },
+                                        ilave4Gostericiler: {
+                                            ilave4Gosterici: [
+                                                {
+                                                    kod: "302",
+                                                    sign: "+",
+                                                    kod2: "1069",
+                                                    ad: "302. ƏDV-yə sıfır(0) dərəcə ilə cəlb edilən əməliyyatların məbləği CƏMİ",
+                                                },
+                                                {
+                                                    kod: "302.1",
+                                                    sign: "+",
+                                                    kod2: "1070",
+                                                    ad: "302.1 VM-nin 165.1.1-ci maddəsinə əsasən Azərbaycan Respublikasında akkreditə edilmiş beynəlxalq təşkilatların və xarici ölkələrin diplomatik və konsulluq nümayəndəliklərinin rəsmi istifadəsi, həmçinin, bu nümayəndəliklərin müvafiq statuslu Azərbaycan Respublikasının vətəndaşı olmayan diplomatik və inzibati-texniki işçilərinin, o cümlədən onlarla yaşayan ailə üzvlərinin şəxsi istifadəsi üçün nəzərdə tutulan mallar və xidmətlər",
+                                                },
+                                                {
+                                                    kod: "302.2",
+                                                    sign: "+",
+                                                    kod2: "1071",
+                                                    ad: "302.2 VM-nin 165.1.2-ci maddəsinə əsasən qrant müqaviləsi (qərarı) əsasında xaricdən alınan qrantlar hesabına malların idxalı, qrant üzrə resipiyentlərə malların təqdim edilməsi, işlərin görülməsi və xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "302.3",
+                                                    sign: "+",
+                                                    kod2: "1072",
+                                                    ad: "302.3 VM-nin 165.1.3-cü maddəsinə əsasən aparılan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.3.1",
+                                                    sign: "+",
+                                                    kod2: "2001",
+                                                    ad: "302.3.1. VM-nin 165.1.3-cü maddəsinə əsasən malların ixracı üzrə aparılmış əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.3.2",
+                                                    sign: "+",
+                                                    kod2: "2002",
+                                                    ad: "302.3.2. VM-nin 165.1.3-cü maddəsinə əsasən bu Məcəllənin 168.1.5-ci maddəsində göstərilmiş xidmətlərin ixracı üzrə aparılmış əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.4",
+                                                    sign: "+",
+                                                    kod2: "1073",
+                                                    ad: "302.4 VM-nin 165.1.4-cü maddəsinə əsasən beynəlxalq poçt xidmətləri istisna olmaqla, beynəlxalq və tranzit yük və sərnişin daşınması, habelə tranzit yük daşınması ilə bilavasitə bağlı yük aşırılma xidməti. Beynəlxalq və tranzit uçuşlarla bilavasitə bağlı olan işlərin görülməsi, xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "302.5",
+                                                    sign: "+",
+                                                    kod2: "1074",
+                                                    ad: "302.5 VM-nin 165.1.5-ci maddəsinə əsasən Azərbaycan Respublikasının Mərkəzi Bankına qızıl və digər qiymətlilərin göndərilməsi",
+                                                },
+                                                {
+                                                    kod: "302.6",
+                                                    sign: "+",
+                                                    kod2: "2003",
+                                                    ad: "302.6 VM-nin 165.1.7-ci maddəsinə əsasən sənaye parkının rezidentinə podratçı tərəfindən, podratçıya isə onunla birbaşa müqavilə bağlamış subpodratçı tərəfindən həmin fəaliyyətin məqsədləri üçün malların təqdim edilməsi, işlərin görülməsi və xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "302.7",
+                                                    sign: "+",
+                                                    kod2: "1076",
+                                                    ad: "302.7 Qanunla təsdiq olunmuş hasilatın pay bölgüsü haqqında, əsas boru kəməri haqqında və digər bu qəbildən olan sazişlərdə və ya qanunlarda, o cümlədən neft və qaz haqqında, ixrac məqsədli neft-qaz fəaliyyəti haqqında qanunlar çərçivəsində aparılan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.7.1",
+                                                    sign: "+",
+                                                    kod2: "1122",
+                                                    ad: "302.7.1 o cümlədən əvvəlcədən alınmış ödənişlər",
+                                                },
+                                                {
+                                                    kod: "302.8",
+                                                    sign: "+",
+                                                    kod2: "1077",
+                                                    ad: "302.8 Təqdim ediləcək malların (işlərin, xidmətlərin) hesabına əvvəlcədən alınmış ödənişlər üzrə",
+                                                },
+                                                {
+                                                    kod: "302.9",
+                                                    sign: "+",
+                                                    kod2: "1237",
+                                                    ad: "302.9 Vergi Məcəlləsinin 165.1.8-ci maddəsinə əsasən aparılan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.10",
+                                                    sign: "+",
+                                                    kod2: "1238",
+                                                    ad: "302.10 Vergi Məcəlləsinin 165.1.9-cu maddəsinə əsasən aparılan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302.11",
+                                                    sign: "+",
+                                                    kod2: "1123",
+                                                    ad: "302.11 Xüsusi iqtisadi zonalar haqqında qanunlar çərçivəsində aparılan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "302.12",
+                                                    sign: "+",
+                                                    kod2: "1124",
+                                                    ad: "302.12 Azərbaycan Respublikasının tərəfdar çıxdığı beynəlxalq müqavilələr üzrə",
+                                                },
+                                                {
+                                                    kod: "302-1",
+                                                    sign: "+",
+                                                    kod2: "1233",
+                                                    ad: "302-1 Elektron ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302-2",
+                                                    sign: "+",
+                                                    kod2: "1234",
+                                                    ad: "302-2 Pərakəndə ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "302-3",
+                                                    sign: "+",
+                                                    kod2: "1235",
+                                                    ad: "302-3 Topdan ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
+                                                },
+                                            ],
+                                        },
+                                        ilave5Gostericiler: {
+                                            ilave5Gosterici: [
+                                                {
+                                                    kod: "303",
+                                                    sign: "+",
+                                                    kod2: "1078",
+                                                    ad: "303. ƏDV-dən azad olunan əməliyyatların məbləği CƏMİ",
+                                                },
+                                                {
+                                                    kod: "303.1",
+                                                    sign: "+",
+                                                    kod2: "1079",
+                                                    ad: "303.1 VM-nin 164.1.1-ci maddəsinə əsasən özəlləşdirilmə qaydasında dövlət müəssisəsindən satın alınan əmlakın dəyəri, habelə dövlət əmlakının icarəyə verilməsindən alınan icarə haqqının büdcəyə ödənilməli olan hissəsi",
+                                                },
+                                                {
+                                                    kod: "303.2",
+                                                    sign: "+",
+                                                    kod2: "1080",
+                                                    ad: "303.2 VM-nin 164.1.2-ci maddəsinə əsasən maliyyə xidmətlərinin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.3",
+                                                    sign: "+",
+                                                    kod2: "1081",
+                                                    ad: "303.3 VM-nin 164.1.3-cü maddəsinə əsasən milli və ya xarici valyutanın (numizmatika məqsədlərindən başqa), həmçinin qiymətli kağızların göndərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.4",
+                                                    sign: "+",
+                                                    kod2: "1083",
+                                                    ad: "303.4 VM-nin 164.1.5-ci maddəsinə əsasən idxal olunan əmlak istisna olmaqla müəssisənin Nizamnamə fonduna (kapitalına) pay şəklində hər hansı əmlakın qoyulması (əmlakın pay şəklində qoyuluşu, onun müqabilində bilavasitə digər əmlakın əldə edilməsi ilə əlaqədar olmadıqda)",
+                                                },
+                                                {
+                                                    kod: "303.5",
+                                                    sign: "+",
+                                                    kod2: "1084",
+                                                    ad: "303.5 VM-nin 164.1.6-cı maddəsinə əsasən tutulan məbləğlər hədlərində dövlət hakimiyyəti, maliyyə bazarlarına nəzarət, yerli özünüidarəetmə və digər səlahiyyətli orqanların tutduğu dövlət rüsumu, icazə haqları, yığımlar, xüsusi notariusların aldığı haqlar (notariat hərəkətlərinin aparılmasına və notariat hərəkətləri ilə əlaqədar göstərilən xidmətə görə) və onların tutulması müqabilində göstərdiyi xidmətlər",
+                                                },
+                                                {
+                                                    kod: "303.6",
+                                                    sign: "+",
+                                                    kod2: "1085",
+                                                    ad: "303.6 VM-nin 164.1.7-ci maddəsinə əsasən kütləvi informasiya vasitələri məhsullarının alqı-satqısının bütün növləri üzrə dövriyyələr, mətbu kütləvi informasiya vasitələri məhsulları istehsalı ilə bağlı redaksiya, nəşriyyat və poliqrafiya fəaliyyəti (reklam xidmətləri istisna olmaqla)",
+                                                },
+                                                {
+                                                    kod: "303.7",
+                                                    sign: "+",
+                                                    kod2: "1086",
+                                                    ad: "303.7 VM-nin 164.1.8-ci maddəsinə əsasən ümumtəhsil müəssisələri, habelə peşə təhsili müəssisələri üçün dərslik komplektləri (iş dəftərləri istisna olmaqla) və uşaq ədəbiyyatının istehsalı ilə bağlı redaksiya, nəşriyyat və poliqrafiya fəaliyyəti",
+                                                },
+                                                {
+                                                    kod: "303.8",
+                                                    sign: "+",
+                                                    kod2: "1087",
+                                                    ad: "303.8 VM-nin 164.1.9-cu maddəsinə əsasən dəfn və qəbiristanlığın mərasim xidmətləri",
+                                                },
+                                                {
+                                                    kod: "303.9",
+                                                    sign: "+",
+                                                    kod2: "1088",
+                                                    ad: "303.9 VM-nin 164.1.10-cu maddəsinə əsasən Azərbaycan Respublikası Mərkəzi Bankının və Azərbaycan Respublikası Dövlət Neft Fondunun qanunvericiliklə nəzərdə tutulmuş vəzifələrinin yerinə yetirilməsi ilə bağlı mal idxalı, iş görülməsi və xidmət göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.10",
+                                                    sign: "+",
+                                                    kod2: "1089",
+                                                    ad: "303.10 VM-nin 164.1.11-ci maddəsinə əsasən Azərbaycan Respublikasına, o cümlədən onu təmsil edən hüquqi şəxslərə neft-qaz ehtiyatlarının kəşfiyyatı, işlənməsi və hasilatın pay bölgüsü, ixrac boru kəmərləri haqqında və bu qəbildən olan digər sazişlərə uyğun olaraq verilməsi nəzərdə tutulan əsas fondların, daşınan əmlakın və digər aktivlərin Azərbaycan Respublikası Dövlət Neft Fonduna və ya Azərbaycan Respublikasını təmsil edən tərəfə hər hansı şəkildə təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "303.11",
+                                                    sign: "+",
+                                                    kod2: "1091",
+                                                    ad: "303.11 VM-nin 164.1.12-ci maddəsinə əsasən metropolitenlə sərnişindaşıma xidmətləri",
+                                                },
+                                                {
+                                                    kod: "303.12",
+                                                    sign: "+",
+                                                    kod2: "1093",
+                                                    ad: "303.12 VM-nin 164.1.13-cü maddəsinə əsasən ödənişli təhsil xidmətlərinin göstərilməsi (digər fəaliyyətləri ilə bağlı xidmətlərin göstərilməsi istisna olmaqla)",
+                                                },
+                                                {
+                                                    kod: "303.13",
+                                                    sign: "+",
+                                                    kod2: "3014",
+                                                    ad: "303.13 VM-nin 164.1.14-cü maddəsinə əsasən Vergi Məcəllənin 106.1.9-106.1.11-ci maddələri ilə müəyyən olunan aktivlərin dəyəri və onların hər hansı şəkildə təqdim olunması üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "303.14",
+                                                    sign: "+",
+                                                    kod2: "3017",
+                                                    ad: "303.14 VM-nin 164.1.17-ci maddəsinə əsasən hüquqi şəxsin iştirak paylarının və ya səhmlərinin təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "303.15",
+                                                    sign: "+",
+                                                    kod2: "9092",
+                                                    ad: "303.15 VM-nin 164.1.18-ci maddəsinə əsasən kənd təsərrüfatı məhsullarının istehsalçıları (o cümlədən, sənaye üsulu ilə) tərəfindən özlərinin istehsal etdikləri kənd təsərrüfatı məhsullarının satışı üzrə dövriyyələr  ",
+                                                },
+                                                {
+                                                    kod: "303.16",
+                                                    sign: "+",
+                                                    kod2: "1112",
+                                                    ad: "303.16 VM-nin 164.1.27-ci maddəsinə əsasən buğdanın idxalı və satışı, buğda ununun və çörəyin istehsalı və satışı  ",
+                                                },
+                                                {
+                                                    kod: "303.17",
+                                                    sign: "+",
+                                                    kod2: "1113",
+                                                    ad: "303.17 VM-nin 164.1.29-cu maddəsinə əsasən damazlıq heyvanların idxalı və satış  ",
+                                                },
+                                                {
+                                                    kod: "303.18",
+                                                    sign: "+",
+                                                    kod2: "1114",
+                                                    ad: "303.18 VM-nin 164.1.30-cu maddəsinə əsasən toxum və tinglərin idxalı və satışı  ",
+                                                },
+                                                {
+                                                    kod: "303.19",
+                                                    sign: "+",
+                                                    kod2: "1115",
+                                                    ad: "303.19 VM-nin 164.1.31-ci maddəsinə əsasən mineral gübrələrin, pestisidlərin idxalı və satışı  ",
+                                                },
+                                                {
+                                                    kod: "303.20",
+                                                    sign: "+",
+                                                    kod2: "1116",
+                                                    ad: "303.20 VM-nin 164.1.32-ci maddəsinə əsasən toxumların yetişdirilməsi, quşçuluq və arıçılıq üçün avadanlıqların, o cümlədən laboratoriya avadanlıqlarının, toxum, taxıl və quru paxlalı bitkilərin təmizlənməsi, çeşidlənməsi və ya kalibrlənməsi üçün maşınların idxalı və satışı  ",
+                                                },
+                                                {
+                                                    kod: "303.21",
+                                                    sign: "+",
+                                                    kod2: "1117",
+                                                    ad: "303.21 VM-nin 164.1.34-cü maddəsinə əsasən bilavasitə kənd təsərrüfatı təyinatlı suvarma və digər qurğuların, maşınların, avadanlıqların və texnikaların idxalı və satışı  ",
+                                                },
+                                                {
+                                                    kod: "303.22",
+                                                    sign: "+",
+                                                    kod2: "1118",
+                                                    ad: "303.22 VM-nin 164.1.36-cı maddəsinə əsasən ödəmə qabiliyyətini itirmiş bankların restrukturizasiya və sağlamlaşdırma tədbirləri çərçivəsində müvafiq icra hakimiyyəti orqanının müəyyən etdiyi qaydada qeyri-işlək (toksik) aktivlərin təqdim edilməsi  ",
+                                                },
+                                                {
+                                                    kod: "303.23",
+                                                    sign: "+",
+                                                    kod2: "1119",
+                                                    ad: "303.23 VM-nin 164.1.37-ci maddəsinə əsasən heyvan və quş ətinin satışı",
+                                                },
+                                                {
+                                                    kod: "303.24",
+                                                    sign: "+",
+                                                    kod2: "1214",
+                                                    ad: "303.24 VM-nin 164.1.42-ci maddəsinə əsasən \u201CMəşğulluq haqqında\u201D Azərbaycan Respublikasının Qanununa uyğun olaraq müvafiq icra hakimiyyəti orqanının müəyyən etdiyi orqan (qurum) tərəfindən haqqı ödənilən ictimai işlərin təşkili ilə əlaqədar işçi qüvvəsinin təqdim edilməsi üzrə əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "303.25",
+                                                    sign: "+",
+                                                    kod2: "1240",
+                                                    ad: "303.25 VM-nin 164.1.43-cü maddəsinə əsasən kəpəyin istehsalı və satışı",
+                                                },
+                                                {
+                                                    kod: "303.26",
+                                                    sign: "+",
+                                                    kod2: "1241",
+                                                    ad: "303.26 VM-nin 164.1.44-cü maddəsinə əsasən Azərbaycan Futbol Federasiyaları Assosiasiyası tərəfindən verilmiş təsdiqedici sənəd əsasında Azərbaycan Respublikasında keçirilən UEFA 2019 Avropa Liqasının final oyunu ilə əlaqədar UEFA, onun yaratdığı qeyri-rezident hüquqi şəxslər və qeyri-rezident futbol klubları (assosiasiyaları) tərəfindən həmin oyunla bağlı malların təqdim edilməsi, işlər görülməsi və xidmətlər göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.27",
+                                                    sign: "+",
+                                                    kod2: "1242",
+                                                    ad: "303.27 VM-nin 164.1.45-ci maddəsinə əsasən Azərbaycan Futbol Federasiyaları Assosiasiyası tərəfindən verilmiş təsdiqedici sənəd əsasında Azərbaycan Respublikasında keçirilən UEFA 2020 Futbol çempionatı ilə əlaqədar UEFA, onu təmsil edən, habelə onun yaratdığı və tərəfindən səlahiyyətləndirilmiş hüquqi şəxslər tərəfindən çempionatla bağlı malların təqdim edilməsi, işlər görülməsi və xidmətlər göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.28",
+                                                    sign: "+",
+                                                    kod2: "1243",
+                                                    ad: "303.28 VM-nin 164.1.46-cı maddəsinə əsasən heyvandarlıq və quşçuluq təsərrüfatlarında istifadə edilən yem və yem əlavələrinin satışı üzrə dövriyyələr",
+                                                },
+                                                {
+                                                    kod: "303.29",
+                                                    sign: "+",
+                                                    kod2: "1244",
+                                                    ad: "303.29 VM-nin 164.1.47-ci maddəsinə əsasən bina tikintisi fəaliyyəti ilə məşğul olan şəxslər tərəfindən tikilən binanın yaşayış sahəsinin dövlətə ayrılan hissəsi üzrə dövriyyələr",
+                                                },
+                                                {
+                                                    kod: "303.30",
+                                                    sign: "+",
+                                                    kod2: "1245",
+                                                    ad: "303.30 VM-nin 164.1.48-ci maddəsinə əsasən siyahısı müvafiq icra hakimiyyəti orqanının müəyyən etdiyi orqan (qurum) (Prezident) tərəfindən təsdiq edilən dövlət adından yaradılan publik hüquqi şəxslər tərəfindən nizamnaməsində nəzərdə tutulan və ona həvalə edilən vəzifələrin yerinə yetirilməsi üçün büdcə qanunvericiliyinə uyğun olaraq dövlət büdcəsindən ayrılmış vəsait hesabına Maliyyə Nazirliyi ilə bağlanılmış müqavilə əsasında işlərin və xidmətlərin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.31",
+                                                    sign: "+",
+                                                    kod2: "1246",
+                                                    ad: "303.31 VM-nin 164.1.49-cu maddəsinə əsasən Azərbaycan Respublikasında keçirilən Formula 1 və Formula 2 yarışları ilə bağlı Gənclər və İdman Nazirliyi ilə bağlanılmış müqavilə əsasında mal, iş və xidmətin təqdim edilməsi",
+                                                },
+                                                {
+                                                    kod: "303.32",
+                                                    sign: "+",
+                                                    kod2: "1247",
+                                                    ad: "303.32 VM-nin 164.1.50-ci maddəsinə əsasən Azərbaycan Respublikasında daimi nümayəndəlik yaratmayan qeyri-rezident şəxslərin mülki aviasiya fəaliyyəti çərçivəsində hava gəmilərinin və hava gəmilərinin mühərriklərinin rezident hüquqi şəxslərə icarəyə və ya lizinqə verilməsi",
+                                                },
+                                                {
+                                                    kod: "303.33",
+                                                    sign: "+",
+                                                    kod2: "1248",
+                                                    ad: "303.33 VM-nin 164.1.51-ci maddəsinə əsasən \u201CTibbi sığorta haqqında\u201D Azərbaycan Respublikasının Qanununa uyğun olaraq icbari tibbi sığorta fondunun vəsaiti hesabına tibbi sığorta xidmətlərinin göstərilməsi",
+                                                },
+                                                {
+                                                    kod: "303.34",
+                                                    sign: "+",
+                                                    kod2: "1253",
+                                                    ad: "303.34 VM-nin 164.1.55-ci maddəsinə əsasən külçə, sikkə və ya qranul şəklində qızılın və gümüşün satışı",
+                                                },
+                                                {
+                                                    kod: "303.35",
+                                                    sign: "+",
+                                                    kod2: "1090",
+                                                    ad: "303.35 Təqdim ediləcək malların (işlərin, xidmətlərin) hesabına əvvəlcədən alınmış ödənişləri",
+                                                },
+                                                {
+                                                    kod: "303.36",
+                                                    sign: "+",
+                                                    kod2: "1125",
+                                                    ad: "303.36 Azərbaycan Respublikasının tərəfdar çıxdığı beynəlxalq müqavilələr üzrə",
+                                                },
+                                                {
+                                                    kod: "303.37",
+                                                    sign: "+",
+                                                    kod2: "1126",
+                                                    ad: "303.37 Xüsusi iqtisadi zonalar haqqında qanunlar çərçivəsində aparılan əməliyyatlar üzrə",
+                                                },
+                                                {
+                                                    kod: "303-1",
+                                                    sign: "+",
+                                                    kod2: "1249",
+                                                    ad: "303-1 Elektron ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "303-2",
+                                                    sign: "+",
+                                                    kod2: "1250",
+                                                    ad: "303-2 Pərakəndə ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
+                                                },
+                                                {
+                                                    kod: "303-3",
+                                                    sign: "+",
+                                                    kod2: "1251",
+                                                    ad: "303-3 Topdan ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
+                                                },
+                                            ],
+                                        },
+                                        ilave1SatirKoduReferanslari: {
+                                            ilave1SatirKoduReferansi: [
+                                                {
+                                                    kod2: "102",
+                                                    aciklama: "310",
+                                                    oran: "0.18",
+                                                    faturaTipi: "1",
+                                                },
+                                                {
+                                                    kod2: "103",
+                                                    aciklama: "311",
+                                                    oran: "0.00",
+                                                    faturaTipi: "1",
+                                                },
+                                                {
+                                                    kod2: "104",
+                                                    aciklama: "314",
+                                                    oran: "0.18",
+                                                    faturaTipi: "1",
+                                                },
+                                                {
+                                                    kod2: "105",
+                                                    aciklama: "316",
+                                                    oran: "0.00",
+                                                    faturaTipi: "1",
+                                                },
+                                            ],
+                                        },
+                                        vatBDSatirKoduReferanslari: {
+                                            vatBDSatirKoduReferansi: [
+                                                {
+                                                    kod2: "101",
+                                                    aciklama: "%18",
+                                                    oran: "0.18",
+                                                    faturaTipi: "0",
+                                                },
+                                                {
+                                                    kod2: "105",
+                                                    aciklama: "%0",
+                                                    oran: "0.00",
+                                                    faturaTipi: "0",
+                                                },
+                                            ],
+                                        },
+                                        sertfikatSerileri: {
+                                            sertfikatSeri: [
+                                                {
+                                                    kod2: "101",
+                                                    aciklama: "AB",
+                                                },
+                                                {
+                                                    kod2: "102",
+                                                    aciklama: "AI",
+                                                },
+                                                {
+                                                    kod2: "103",
+                                                    aciklama: "Az",
+                                                },
+                                                {
+                                                    kod2: "104",
+                                                    aciklama: "Bin",
+                                                },
+                                                {
+                                                    kod2: "105",
+                                                    aciklama: "BTC",
+                                                },
+                                                {
+                                                    kod2: "106",
+                                                    aciklama: "BTƏ",
+                                                },
+                                                {
+                                                    kod2: "107",
+                                                    aciklama: "C-Q",
+                                                },
+                                                {
+                                                    kod2: "108",
+                                                    aciklama: "D",
+                                                },
+                                                {
+                                                    kod2: "109",
+                                                    aciklama: "İn",
+                                                },
+                                                {
+                                                    kod2: "110",
+                                                    aciklama: "K-Q",
+                                                },
+                                                {
+                                                    kod2: "111",
+                                                    aciklama: "MK",
+                                                },
+                                                {
+                                                    kod2: "112",
+                                                    aciklama: "Nx",
+                                                },
+                                                {
+                                                    kod2: "113",
+                                                    aciklama: "Pd",
+                                                },
+                                                {
+                                                    kod2: "114",
+                                                    aciklama: "Pr",
+                                                },
+                                                {
+                                                    kod2: "115",
+                                                    aciklama: "Qr",
+                                                },
+                                                {
+                                                    kod2: "116",
+                                                    aciklama: "Şd",
+                                                },
+                                                {
+                                                    kod2: "117",
+                                                    aciklama: "Sur",
+                                                },
+                                                {
+                                                    kod2: "118",
+                                                    aciklama: {},
+                                                },
+                                                {
+                                                    kod2: "119",
+                                                    aciklama: "ZHb",
+                                                },
+                                                {
+                                                    kod2: "120",
+                                                    aciklama: "ZM",
+                                                },
+                                            ],
+                                        },
+                                        gostericilerMuzdlu: {
+                                            gosterici: [
+                                                {
+                                                    kod2: "1330",
+                                                    sign: "+",
+                                                    ad: "330. Cari hesabat ayında və ya hesabat dövrünün 1-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1331",
+                                                    sign: "-",
+                                                    ad: "330.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                                {
+                                                    kod2: "1332",
+                                                    sign: "+",
+                                                    ad: "331. Hesabat dövrünün 2-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1333",
+                                                    sign: "-",
+                                                    ad: "331.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                                {
+                                                    kod2: "1334",
+                                                    sign: "+",
+                                                    ad: "332. Hesabat dövrünün 3-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1335",
+                                                    sign: "-",
+                                                    ad: "332.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                            ],
+                                        },
+                                        gostericilerMuzdlu2: {
+                                            gosterici: [
+                                                {
+                                                    kod2: "1336",
+                                                    sign: "+",
+                                                    ad: "330. Cari hesabat ayında və ya hesabat dövrünün 1-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1337",
+                                                    sign: "-",
+                                                    ad: "330.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                                {
+                                                    kod2: "1338",
+                                                    sign: "+",
+                                                    ad: "331. Hesabat dövrünün 2-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1339",
+                                                    sign: "-",
+                                                    ad: "331.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                                {
+                                                    kod2: "1340",
+                                                    sign: "+",
+                                                    ad: "332. Hesabat dövrünün 3-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
+                                                },
+                                                {
+                                                    kod2: "1341",
+                                                    sign: "-",
+                                                    ad: "332.1 o cümlədən xarici fiziki şəxslər üzrə",
+                                                },
+                                            ],
+                                        },
+                                    },
+                                };
+
+                                let targets = [
+                                    {
+                                        name: "edvGosterici",
+                                        data: structure["kodlar"]["edvGostericiler"]["edvGosterici"],
+                                        prop: props,
+                                    },
+                                    {
+                                        name: "edvBorcGosterici",
+                                        data: structure["kodlar"]["edvDebitorBorcGostericiler"]["edvBorcGosterici"],
+                                        prop: {
+                                            borcEvvel: "Hesabat dövrünün əvvəlinə debitor borc məbləği",
+                                            borcYaranan: "Hesabat dövrü (ay) üzrə yaranan debitor borc məbləği",
+                                            borcSilinen: "Hesabat dövrü (ay) ərzində silinən debitor borc məbləği",
+                                            borcSon: "Hesabat dövrünün sonuna debitor borc məbləği",
+                                        },
+                                    },
+                                    {
+                                        name: "edvAvazGosterici",
+                                        data: structure["kodlar"]["edvAvazGostericiler"]["edvAvazGosterici"],
+                                        parent:'HesaplamaUzreEnt',
+                                        prop: {
+                                            edvsiz: "Ödənilmiş məbləğ (ƏDV nəzərə alınmadan)",
+                                            edv: "Əlavə dəyər vergisi məbləği",
+                                        },
+                                        parent: 'HesaplamaAvazEnt'
+                                    },
+                                    {
+                                        name: "edvDegisGosterici",
+                                        data: structure["kodlar"]["edvDegisGostericiler"]["edvDegisGosterici"],
+                                        prop: props,
+                                        parent:'HesaplamaDegisEnt'
+                                    },
+                                    {
+                                        name: "edvHesaplasma",
+                                        data: structure["kodlar"]["edvHesaplasmalar"]["edvHesaplasma"],
+                                        prop: {meblag:'ƏDV Məbləği'},
+                                        parent:'ozel',
+                                    },
+                                    {},
+                                    {
+                                        name: "ilave1Gosterici",
+                                        data: structure["kodlar"]["ilave1Gostericiler"]["ilave1Gosterici"],
+                                        prop: {
+                                            edvsiz: "Malın ƏDV-siz ümumi dəyəri",
+                                            edvMeblag: "Malın ƏDV məbləği",
+                                        },
+                                    },
+                                    {
+                                        name: "ilave1GostericiEvvel",
+                                        data: structure["kodlar"]["ilave1GostericilerEvvel"][
+                                            "ilave1GostericiEvvel"
+                                        ],
+                                        prop: {
+                                            edvsiz: "Malın ƏDV-siz ümumi dəyəri",
+                                            edvMeblag: "Malın ƏDV məbləği",
+                                        },
+                                    },
+                                    {},
+                                    {
+                                        name: "ilave3Bolum2Gosterici",
+                                        data: structure["kodlar"]["ilave3Bolum2Gostericiler"][
+                                            "ilave3Bolum2Gosterici"
+                                        ],
+                                        parent:'EdvAmeliyyatEnt',
+                                        prop: {
+                                            deyer:
+                                            "Təqdim edilmiş mal, iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
+                                            meblag: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
+                                        },
+                                    },
+                                    {
+                                        name: "ilave3Bolum3Gosterici",
+                                        data: structure["kodlar"]["ilave3Bolum3Gostericiler"][
+                                            "ilave3Bolum3Gosterici"
+                                        ],
+                                        parent:'EdvAmeliyyatEnt',
+                                        prop: {
+                                            deyer:
+                                            "Təqdim edilmiş mal, iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
+                                            meblag: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
+                                        },
+                                    },
+                                    {},
+                                    {
+                                        name: "ilave4Gosterici",
+                                        data: structure["kodlar"]["ilave4Gostericiler"]["ilave4Gosterici"],
+                                        parent:'SifirEdvEnt',
+                                        prop: {
+                                            deyer: "Təqdim edilmiş mal, iş və xidmətlərin dəyəri",
+                                            meblag: "Daxil olmuş məbləğ",
+                                        },
+                                    },
+                                    {},
+                                    {
+                                        name: "ilave5Gosterici",
+                                        data: structure["kodlar"]["ilave5Gostericiler"]["ilave5Gosterici"],
+                                        parent: 'AzadEdvEnt',
+                                        prop: {
+                                            deyer: "Təqdim edilmiş mal, iş və xidmətlərin dəyəri",
+                                            meblag: "Daxil olmuş məbləğ",
+                                        },
+                                    },
+                                    {},
+                                    {
+                                        name: "gostericilerMuzdlu",
+                                        data: structure["kodlar"]["gostericilerMuzdlu"]["gosterici"],
+                                        prop: props,
+                                    },
+                                    {
+                                        name: "gostericilerMuzdlu2",
+                                        data: structure["kodlar"]["gostericilerMuzdlu2"]["gosterici"],
+                                        prop: props,
+                                    },
+                                ];
+                                if ( i === 0 ){
+                                    table = document.createElement("table");
+                                    thead = document.createElement("thead");
+                                    tbody = document.createElement("tbody");
+                                    th1 = document.createElement("tr");
+                                    th1.className = "th1";
+                                    th = document.createElement("th");
+                                    th.textContent = "DÖVR";
+                                    th.colSpan = 2;
+                                    th1.appendChild(th);
+                                    th2 = document.createElement("tr");
+                                    th2.className = "th2";
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("İl")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Ay")).parentNode
+                                    );
+
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Tarix")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Növ")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Təqdim edən")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Say")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Sıra")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Əks-Sıra")).parentNode
+                                    );
+                                    th1.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Seçim")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Tarix")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Növ")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Təqdim edən")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Say")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Sıra")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Əks-Sıra")).parentNode
+                                    );
+                                    th2.appendChild(
+                                        document
+                                        .createElement("th")
+                                        .appendChild(document.createTextNode("Seçim")).parentNode
+                                    );
+                                    thead.appendChild(th1);
+                                    thead.appendChild(th2);
+
+                                    for (let j = 0; j < targets.length; j++) {
+                                        let target = targets[j];
+                                        let { name, data, prop } = target;
+                                        if (Object.keys(target).length) {
+                                            for (let h = 0; h < data.length; h++) {
+                                                let node = data[h];
+                                                let th = document.createElement("th");
+                                                th.textContent = node?.ad;
+                                                th.colSpan = Object.keys(prop).length;
+                                                th1.appendChild(th);
+                                                for (let m = 0; m < Object.keys(prop).length; m++) {
+                                                    let key = Object.keys(prop)[m];
+                                                    let th = document.createElement("th");
+                                                    th.textContent = prop[Object.keys(prop)[m]];
+                                                    th2.appendChild(th);
+                                                }
+                                            }
                                         } else {
-                                            const decBlob = new Blob([data],{type: 'text/plain'})
-                                            Paket.file(type + '/' + decYear +'/' + decYear + (decMonth ? ('.'+String('0' + decMonth).slice(-2)):'') + ' - ' + dateReverse + ' ' + time + ' - ' + date + ' ' + time + ' - ' + xmlName , decBlob)
+                                            let th = document.createElement("th");
+                                            th1.appendChild(th);
+                                            th = document.createElement("th");
+                                            th2.appendChild(th);
+                                            let tr = document.createElement("tr");
+                                            let td = document.createElement("td");
+                                            tr.appendChild(td);
                                         }
                                     }
                                 }
-                            }catch(error){
-                                console.log(error)
-                            }
-                        }
-
-                        if (exp) {
-                            let XMLDoc = xml;
-                            if (XMLDoc.querySelector('beyanname').attributes['kodVer'].value!=='VAT_1'){
-                                continue
-                            }
-                            function getElement(nodeValue, parent = 'beyanname', returnNode = "deyer", nodeName = "gosterici") {
-                                if (Number(XMLDoc.querySelector("yil")) < 2020 && returnNode === "deyer") {
-                                    returnNode = "meblag";
-                                }
-                                try {
-                                    return [...XMLDoc.querySelector(parent).querySelectorAll(nodeName)]
-                                        .filter((x) => x.textContent == String(nodeValue))[0]
-                                        .parentNode.querySelector(returnNode).textContent;
-                                } catch (error) {
-                                    return 0;
-                                }
-                            }
-                            const props = {
-                                deyer: "Təqdim edilmiş mal iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
-                                dedv: "Təqdim edilmiş mal iş və xidmətlərin Əlavə dəyər vergisi məbləği",
-                                edvsiz: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
-                                edv: "Daxil olmuş məbləğ (Əlavə dəyər vergisi məbləği)",
-                            };
-
-                            let structure = {
-                                kodlar: {
-                                    aramaSecenekleri: {
-                                        secenek: {
-                                            aciklama: "YGB-nin №-si",
-                                            kod: "2",
-                                        },
-                                    },
-                                    umumiGruplar: {
-                                        umumiGrup: [
-                                            {
-                                                kod: "1",
-                                                ad: "Vergi Məcəlləsi çərçivəsində fəaliyyət göstərən vergi ödəyicisi",
-                                            },
-                                            {
-                                                kod: "2",
-                                                ad: "Qanunla çərçivəsində fəaliyyət göstərən xüsusi vergi recimli meəssisələr",
-                                            },
-                                        ],
-                                    },
-                                    faturaTurleri: {
-                                        faturaTuru: {
-                                            kod: "1",
-                                            ad: "Gömrük bəyannaməsi",
-                                        },
-                                    },
-                                    edvGostericiler: {
-                                        edvGosterici: [
-                                            {
-                                                kod: "301",
-                                                sign: "+",
-                                                kod2: "1001",
-                                                ad: "301. ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1",
-                                                sign: "+",
-                                                kod2: "1101",
-                                                ad: "301.1 Malların təqdim edilməsi, işlərin görülməsi, xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.2",
-                                                sign: "+",
-                                                kod2: "1103",
-                                                ad: "301.2 Azərbaycan Respublikası ərazisində istehsal olunan kənd təsərrüfatı məhsullarının pərakəndə satışı üzrə ƏDV-nə cəlb olunan ticarət əlavəsi",
-                                            },
-                                            {
-                                                kod: "302",
-                                                sign: "+",
-                                                kod2: "1002",
-                                                ad: "302. ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "303",
-                                                sign: "+",
-                                                kod2: "1003",
-                                                ad: "303. ƏDV-dən azad olunan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "304",
-                                                sign: "+",
-                                                kod2: "1004",
-                                                ad: "304. ƏDV-nə 20 faiz dərəcə ilə tutulan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "305",
-                                                sign: "+",
-                                                kod2: "1005",
-                                                ad: "305. Əməliyyatlar üzrə CƏMİ",
-                                            },
-                                            {
-                                                kod: "306",
-                                                sign: "+",
-                                                kod2: "1006",
-                                                ad: "306. Vergi Məcəlləsinin 169-cu maddəsinə əsasən qeyri-rezidentin göstərdiyi xidmətlər və ya gördüyü işlər üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "306.1",
-                                                sign: "+",
-                                                kod2: "1108",
-                                                ad: "306.1 ƏDV-nin məqsədləri üçün qeydiyyata alınmayan qeyri-rezidentin göstərdiyi xidmətlər və ya gördüyü işlər üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "306.2",
-                                                sign: "+",
-                                                kod2: "1109",
-                                                ad: "306.2 Elektron ticarət qaydasında işlərin və xidmətlərin vergi ödəyicisi kimi uçotda olmayan alıcısının ödəmələri ",
-                                            },
-                                            {
-                                                kod: "306.3",
-                                                sign: "+",
-                                                kod2: "1110",
-                                                ad: "306.3 Azərbaycan Respublikasının hüdudlarından kənarda elektron qaydada təşkil olunan lotereyaların, digər yarışların və müsabiqələrin iştirakçısının ödənişi üzrə ",
-                                            },
-                                        ],
-                                    },
-                                    edvDebitorBorcGostericiler: {
-                                        edvBorcGosterici: [
-                                            {
-                                                kod: "307",
-                                                sign: "+",
-                                                kod2: "1400",
-                                                ad: "307 Debitor borclar üzrə",
-                                            },
-                                            {
-                                                kod: "307.1",
-                                                sign: "+",
-                                                kod2: "1401",
-                                                ad: "307.1 ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "307.2",
-                                                sign: "+",
-                                                kod2: "1402",
-                                                ad: "307.2 ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "307.3",
-                                                sign: "+",
-                                                kod2: "1403",
-                                                ad: "307.3 ƏDV-dən azad olunan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "307-1",
-                                                sign: "+",
-                                                kod2: "1404",
-                                                ad: "307-1 01.01.2020-ci il tarixə olan debitor borclar üzrə",
-                                            },
-                                            {
-                                                kod: "307-1.1",
-                                                sign: "+",
-                                                kod2: "1405",
-                                                ad: "307-1.1 ƏDV-nə 18 faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "307-1.2",
-                                                sign: "+",
-                                                kod2: "1406",
-                                                ad: "307-1.2 ƏDV-nə sıfır (0) faiz dərəcə ilə cəlb olunan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "307-1.3",
-                                                sign: "+",
-                                                kod2: "1407",
-                                                ad: "307-1.3 ƏDV-dən azad olunan əməliyyatlar üzrə",
-                                            },
-                                        ],
-                                    },
-                                    edvAvazGostericiler: {
-                                        edvAvazGosterici: [
-                                            {
-                                                kod: "308",
-                                                sign: "+",
-                                                kod2: "1008",
-                                                ad: "308. VM 175.1-ci maddəsinə əsasən alınmış elektron qaimə-fakturalar (elektron vergi hesab-fakturalar) üzrə nağdsız qaydada ödənilmiş məbləğ",
-                                            },
-                                            {
-                                                kod: "308.1",
-                                                sign: "+",
-                                                kod2: "1420",
-                                                ad: "308.1 Gəlirdən birbaşa çıxılmayan kapital xarakterli xərclər üzrə əvəzləşdirilmələr (ƏDV nəzərə alınmadan)",
-                                            },
-                                            {
-                                                kod: "309",
-                                                sign: "+",
-                                                kod2: "1009",
-                                                ad: "309. 01.01.2001-ci il tarixinə olan borcların nağdsız qaydada ödənilmiş məbləği",
-                                            },
-                                            {
-                                                kod: "310",
-                                                sign: "+",
-                                                kod2: "1010",
-                                                ad: "310. İdxalda ƏDV-yə cəlb olunmuş mallara(işlərə,xidmətlərə) görə ödənilmiş məbləğ",
-                                            },
-                                            {
-                                                kod: "310.1",
-                                                sign: "+",
-                                                kod2: "1510",
-                                                ad: "310.1 Gəlirdən birbaşa çıxılmayan kapital xarakterli xərclər üzrə əvəzləşdirilmələr (ƏDV nəzərə alınmadan)",
-                                            },
-                                            {
-                                                kod: "311",
-                                                sign: "+",
-                                                kod2: "1011",
-                                                ad: "311. İdxalda ƏDV-dən azad olunan mallara(işlərə,xidmətlərə) görə ödənilmiş məbləğ",
-                                            },
-                                            {
-                                                kod: "312",
-                                                sign: "+",
-                                                kod2: "1012",
-                                                ad: "312. Vergi Məcəlləsinin 169.4-cü maddəsinə əsasən qeyri-rezidentə ödənilmiş məbləğ",
-                                            },
-                                            {
-                                                kod: "313",
-                                                sign: "+",
-                                                kod2: "1017",
-                                                ad: "313. Vergi Məcəlləsi 175.2-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
-                                            },
-                                            {
-                                                kod: "314",
-                                                sign: "+",
-                                                kod2: "1013",
-                                                ad: "314. Vergi Məcəlləsinin 175.3-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
-                                            },
-                                            {
-                                                kod: "315",
-                                                sign: "-",
-                                                kod2: "1014",
-                                                ad: "315. Vergi Məcəlləsinin 175.4-cü maddəsinə əsasən əvəzləşdirilməsinə yol verilməyən ƏDV məbləği",
-                                            },
-                                            {
-                                                kod: "316",
-                                                sign: "+",
-                                                kod2: "1015",
-                                                ad: "316. ƏDV-yə sıfır(0) faiz dərəcəsi ilə ödənilmiş məbləğ",
-                                            },
-                                            {
-                                                kod: "317",
-                                                sign: "-",
-                                                kod2: "1016",
-                                                ad: "317. Əməliyyatlar üzrə CƏMİ",
-                                            },
-                                        ],
-                                    },
-                                    edvDegisGostericiler: {
-                                        edvDegisGosterici: [
-                                            {
-                                                kod: "318",
-                                                sign: "+",
-                                                kod2: "1017",
-                                                ad: "318. ƏDV-yə cəlb olunan ARTIRILAN dövriyyələr üzrə ƏDV-nin hesablanması ",
-                                            },
-                                            {
-                                                kod: "319",
-                                                sign: "-",
-                                                kod2: "1018",
-                                                ad: "319. ƏDV-yə cəlb olunan AZALDILAN dövriyyələr üzrə ƏDV-nin hesablanması ",
-                                            },
-                                            {
-                                                kod: "319.1",
-                                                sign: "-",
-                                                kod2: "1035",
-                                                ad: "319.1. ƏDV-yə cəlb olunan AZALDILAN dövriyyələr üzrə ƏDV-nin hesablanması",
-                                            },
-                                            {
-                                                kod: "319.2",
-                                                sign: "-",
-                                                kod2: "1036",
-                                                ad: "319.2. Vergi Məcəlləsinin 165.5-ci maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞD ödənişlər)",
-                                            },
-                                            {
-                                                kod: "319.3",
-                                                sign: "-",
-                                                kod2: "1045",
-                                                ad: "319.3. Vergi Məcəlləsinin 165.5-ci maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞDSIZ ödənişlər)",
-                                            },
-                                            {
-                                                kod: "319.4",
-                                                sign: "-",
-                                                kod2: "1430",
-                                                ad: "319.4. Vergi Məcəlləsinin 165.6-cı maddəsinə əsasən ƏDV-si qaytarılan malların geri qaytarılması halları üzrə ƏDV-nin hesablanması (NAĞDSIZ ödənişlər)",
-                                            },
-                                            {
-                                                kod: "320",
-                                                sign: "+",
-                                                kod2: "1019",
-                                                ad: "320. ƏDV-yə sıfır (0) faiz dərəcəsi ilə cəlb olunan əməliyyatlar üzrə ARTIRILAN dövriyyə",
-                                            },
-                                            {
-                                                kod: "321",
-                                                sign: "+",
-                                                kod2: "1020",
-                                                ad: "321. ƏDV-yə sıfır (0) faiz dərəcəsi ilə cəlb olunan əməliyyatlar üzrə AZALDILAN dövriyyə",
-                                            },
-                                            {
-                                                kod: "322",
-                                                sign: "+",
-                                                kod2: "1021",
-                                                ad: "322. ƏDV-dən azad olunan əməliyyatlar üzrə ARTIRILAN dövriyyə",
-                                            },
-                                            {
-                                                kod: "323",
-                                                sign: "+",
-                                                kod2: "1022",
-                                                ad: "323. ƏDV-dən azad olunan əməliyyatlar üzrə AZALDILAN dövriyyə",
-                                            },
-                                            {
-                                                kod: "324",
-                                                sign: "+",
-                                                kod2: "1431",
-                                                ad: "324. Əvəzləşdirilən əməliyyatların AZALDILMASINA görə ƏDV-nin bərpa edilən məbləği",
-                                            },
-                                            {
-                                                kod: "325",
-                                                sign: "+",
-                                                kod2: "1432",
-                                                ad: "325. Əvəzləşdirilən əməliyyatların ARTIRILMASINA görə ƏDV-nin bərpa edilən məbləği",
-                                            },
-                                        ],
-                                    },
-                                    edvHesaplasmalar: {
-                                        edvHesaplasma: [
-                                            {
-                                                kod: "326",
-                                                sign: "+",
-                                                kod2: "1023",
-                                                ad: "326. Büdcəyə ödənilməlidir",
-                                            },
-                                            {
-                                                kod: "327",
-                                                sign: "+",
-                                                kod2: "1092",
-                                                ad: "327. Büdcədən qaytarılır",
-                                            },
-                                        ],
-                                    },
-                                    ilave1Gostericiler: {
-                                        ilave1Gosterici: [
-                                            {
-                                                kod: "5001",
-                                                sign: "+",
-                                                kod2: "1025",
-                                                ad: "Cari hesabat dövründə əldə edilmiş Yük Gömrük Bəyannaməsi üzrə alınmış malın ƏDV-siz ümumi dəyəri və ƏDV məbləğlərinin CƏMİ",
-                                            },
-                                        ],
-                                    },
-                                    ilave1GostericilerEvvel: {
-                                        ilave1GostericiEvvel: [
-                                            {
-                                                kod: "5003",
-                                                sign: "+",
-                                                kod2: "1029",
-                                                ad: "Əvvəlki dövrlərdə əldə edilmiş Yük Gömrük Bəyannaməsi üzrə alınmış və ƏDV məbləği ödənilmiş  malın (işin, xidmətin) ƏDV-siz ümumi dəyər və ƏDV məbləğlərinin CƏMİ",
-                                            },
-                                            {
-                                                kod: "5005",
-                                                sign: "+",
-                                                kod2: "1032",
-                                                ad: "YÜK GÖMRÜK BƏYANNAMƏLƏRİ üzrə alınmış malın(işin,xidmətin) cari hesabat dövründə ödənilmiş ƏDV məbləğlərinin YEKUNU",
-                                            },
-                                        ],
-                                    },
-                                    ilave1Sebepler: {
-                                        ilave1Sebep: [
-                                            {
-                                                kod: "1",
-                                                ad: "Vergi hesab fakturası",
-                                            },
-                                            {
-                                                kod: "2",
-                                                ad: "Gömrük bəyannaməsi",
-                                            },
-                                        ],
-                                    },
-                                    ilave3Bolum2Gostericiler: {
-                                        ilave3Bolum2Gosterici: [
-                                            {
-                                                kod: "301.1",
-                                                sign: "+",
-                                                kod2: "1091",
-                                                ad: "301.1 Təqdim edilmiş mallar(işlər,xidmətlər) üzrə ƏDV-nə cəlb olunan dövriyyələrin məbləği CƏMİ",
-                                            },
-                                            {
-                                                kod: "301.1.1",
-                                                sign: "+",
-                                                kod2: "1037",
-                                                ad: "301.1.1 Malların təqdim edilməsindən gəlir",
-                                            },
-                                            {
-                                                kod: "301.1.1.1",
-                                                sign: "+",
-                                                kod2: "1038",
-                                                ad: "301.1.1.1 Girov əmlakların(malların) təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.1.2",
-                                                sign: "+",
-                                                kod2: "1039",
-                                                ad: "301.1.1.2 Əmək haqqının əvəzınə təqdim edilmiş mallar",
-                                            },
-                                            {
-                                                kod: "301.1.1.3",
-                                                sign: "+",
-                                                kod2: "1040",
-                                                ad: "301.1.1.3 Aqent vasitəsi ilə təqdim edilmiş mallar üzrə gəlirlər",
-                                            },
-                                            {
-                                                kod: "301.1.1.4",
-                                                sign: "+",
-                                                kod2: "1041",
-                                                ad: "301.1.1.4 Müstəqil ƏDV ödəyicisi olan struktur bölmələri arasında təqdim edilmiş mallar",
-                                            },
-                                            {
-                                                kod: "301.1.1.5",
-                                                sign: "+",
-                                                kod2: "1042",
-                                                ad: "301.1.1.5 Haqqı ödənilməklə və ya əvəzsiz qaydada öz işçilərinə və digər şəxslərə mal verilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.1.6",
-                                                sign: "+",
-                                                kod2: "1043",
-                                                ad: "301.1.1.6 Barter əməliyyatları üzrə malların təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.1.7",
-                                                sign: "+",
-                                                kod2: "1044",
-                                                ad: "301.1.1.7 Digər malların təqdim edilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.1.8",
-                                                sign: "+",
-                                                kod2: "1046",
-                                                ad: "301.1.1.8 Təqdim ediləcək malların hesabına əvvəlcədən alınmış ödənişləri",
-                                            },
-                                            {
-                                                kod: "301.1.1.9",
-                                                sign: "+",
-                                                kod2: "9001",
-                                                ad: "301.1.1.9  Daşınan və daşınmaz əmlakın təqdim edilməsindən gəlirlər",
-                                            },
-                                            {
-                                                kod: "301.1.1.10",
-                                                sign: "+",
-                                                kod2: "1216",
-                                                ad: "301.1.1.10 Mallar təqdim edildikdən sonra verilmiş borclar",
-                                            },
-                                            {
-                                                kod: "301.1.1.11",
-                                                sign: "+",
-                                                kod2: "1217",
-                                                ad: "301.1.1.11 Mallar təqdim edilənədək verilmiş borclar",
-                                            },
-                                            {
-                                                kod: "301.1.1.12",
-                                                sign: "+",
-                                                kod2: "1218",
-                                                ad: "301.1.1.12 Malların təqdim edilməsi üzrə yaranan debitor borclar üzrə iddia müddətinin bitməsi",
-                                            },
-                                            {
-                                                kod: "301.1.1.13",
-                                                sign: "+",
-                                                kod2: "1219",
-                                                ad: "301.1.1.13 Qarşılıqlı hesablaşmalar aparıldıqda öhdəliyin ləğv edilməsi və ya ödənilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.1.14",
-                                                sign: "+",
-                                                kod2: "1252",
-                                                ad: "301.1.1.14 Tələb hüququ güzəşt edildikdə \u2013 güzəşt edilən məbləğ",
-                                            },
-                                            {
-                                                kod: "301.1.2",
-                                                sign: "+",
-                                                kod2: "1055",
-                                                ad: "301.1.2 İşlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.2.1",
-                                                sign: "+",
-                                                kod2: "1056",
-                                                ad: "301.1.2.1 Daşınan və daşınmaz əmlakın icarəyə verilməsindən gəlirlər",
-                                            },
-                                            {
-                                                kod: "301.1.2.2",
-                                                sign: "+",
-                                                kod2: "1057",
-                                                ad: "301.1.2.2 Əmək haqqının  əvəzinə işlərin görülməsi və  xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.2.3",
-                                                sign: "+",
-                                                kod2: "1058",
-                                                ad: "301.1.2.3 Müstəqil ƏDV ödəyicisi olan struktur bölmələri arasında işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.2.4",
-                                                sign: "+",
-                                                kod2: "1059",
-                                                ad: "301.1.2.4 Əvəzsiz işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.2.5",
-                                                sign: "+",
-                                                kod2: "1060",
-                                                ad: "301.1.2.5 Barter əməliyyatları üzrə işlərin görülməsi və xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.2.6",
-                                                sign: "+",
-                                                kod2: "1061",
-                                                ad: "301.1.2.6 Sair işlərin görülməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301.1.2.7",
-                                                sign: "+",
-                                                kod2: "1063",
-                                                ad: "301.1.2.7 Təqdim ediləcək işlərin və xidmətlərin hesabına əvvəlcədən alınmış ödənişləri",
-                                            },
-                                            {
-                                                kod: "301.1.2.8",
-                                                sign: "+",
-                                                kod2: "1220",
-                                                ad: "301.1.2.8 Emal əməliyyatları üzrə işlərin görülməsi və xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.2.9",
-                                                sign: "+",
-                                                kod2: "1221",
-                                                ad: "301.1.2.9 İşlər, xidmətlər təqdim edildikdən sonra verilmiş borclar",
-                                            },
-                                            {
-                                                kod: "301.1.2.10",
-                                                sign: "+",
-                                                kod2: "1222",
-                                                ad: "301.1.2.10 İşlər, xidmətlər təqdim edilənədək verilmiş borclar",
-                                            },
-                                            {
-                                                kod: "301.1.2.11",
-                                                sign: "+",
-                                                kod2: "1223",
-                                                ad: "301.1.2.11 Tələb hüququ güzəşt edildikdə \u2013 güzəşt edilən məbləğ",
-                                            },
-                                            {
-                                                kod: "301.1.2.12",
-                                                sign: "+",
-                                                kod2: "1224",
-                                                ad: "301.1.2.12 İşlərin, xidmətlərin təqdim edilməsi üzrə yaranan debitor borclar üzrə iddia müddətinin bitməsi",
-                                            },
-                                            {
-                                                kod: "301.1.2.13",
-                                                sign: "+",
-                                                kod2: "1225",
-                                                ad: "301.1.2.13 Qarşılıqlı hesablaşmalar aparıldıqda öhdəliyin ləğv edilməsi və ya ödənilməsi",
-                                            },
-                                            {
-                                                kod: "301.1.3",
-                                                sign: "+",
-                                                kod2: "1094",
-                                                ad: "301.1.3 Vergi Məcəlləsinin 159.5-ci maddəsinə əsasən ƏDV tutulan əməliyyat sayılan mallardan (işlərdən, xidmətlərdən) qeyri-kommersiya məqsədləri üçün istifadə edilməsi, fövqəladə hallardan başqa malların itməsi, əksik gəlməsi, xarab olması, tam amortizasiya olunmadan uçotdan silinməsi və ya oğurlanması üzrə məbləğ",
-                                            },
-                                            {
-                                                kod: "301.1.4",
-                                                sign: "+",
-                                                kod2: "1064",
-                                                ad: "301.1.4 Vergi Məcəlləsinin 159.6-cü maddəsinə əsasən ƏDV üzrə qeydiyyatı ləğv edilmə tarixinə olan mal qalığının məbləği",
-                                            },
-                                            {
-                                                kod: "301.1.5",
-                                                sign: "+",
-                                                kod2: "1095",
-                                                ad: "301.1.5 VM-nin 159.10-cu maddəsinə əsasən bu Məcəllənin 164.1.11-ci, 164.1.15-ci, 164.1.16-cı və 164.1.20-164.1.25-ci, 164.1.33-cü və 164.1.35-ci maddələrinə və 164-cü maddənin digər bəndlərinə uyğun olaraq ƏDV-dən azad edilən idxal mallarının Azərbaycan Respublikasının ərazisində təqdim edilməsi ilə əlaqədar vergi tutulan əməliyyatlar üzrə məbləğ",
-                                            },
-                                            {
-                                                kod: "301-1",
-                                                sign: "+",
-                                                kod2: "1226",
-                                                ad: "301-1 Elektron ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301-2",
-                                                sign: "+",
-                                                kod2: "1227",
-                                                ad: "301-2 Pərakəndə ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "301-3",
-                                                sign: "+",
-                                                kod2: "1228",
-                                                ad: "301-3 Topdan ticarət üzrə ƏDV-yə 18 faiz dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                        ],
-                                    },
-                                    ilave3Bolum3Gostericiler: {
-                                        ilave3Bolum3Gosterici: [
-                                            {
-                                                kod: "326",
-                                                sign: "+",
-                                                kod2: "1065",
-                                                ad: "326. VM-nin 159.2-ci maddəsinə əsasən bu Məcəllənin 167-ci və 168-ci maddələrinə uyğun olaraq  Azərbaycan Respublikasınını hüdudlarından kənarda malların təqdim edilməsi, xidmətlərin göstərilməsi və işlər görülməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "327",
-                                                sign: "+",
-                                                kod2: "1066",
-                                                ad: "327. VM-nin 159.5-ci maddəsinə əsasən  fövqəladə hallarda malların itməsi, əskik gəlməsi, xarab olması, tam amortizasiya olunmadan uçotdan silinməsi və ya oğurlanması üzrə məbləğ",
-                                            },
-                                            {
-                                                kod: "328",
-                                                sign: "+",
-                                                kod2: "1067",
-                                                ad: "328. Vergi Məcəlləsinin 159.7-ci maddəsinə əsasən vergiyə cəlb olunmayan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "329",
-                                                sign: "+",
-                                                kod2: "1068",
-                                                ad: "329. Vergi Məcəlləsinin 160-ci maddəsinə əsasən müəssisənin təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "330",
-                                                sign: "+",
-                                                kod2: "1120",
-                                                ad: "330. Müstəqil sahibkarlıq fəaliyyəti çərçivəsində malların göndərilməsi, işlərin görülməsi və xidmətlərin göstərilməsi sayılmayan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "331",
-                                                sign: "+",
-                                                kod2: "1121",
-                                                ad: "331. Rüsumsuz ticarət mağazalarında (Duty-Free) malların təqdim edilməsi və xidmətlərin göstərilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "332",
-                                                sign: "+",
-                                                kod2: "1230",
-                                                ad: "332. Qeyri-sahibkarlıq fəaliyyəti üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "333",
-                                                sign: "+",
-                                                kod2: "1231",
-                                                ad: "333. Pul vəsaitləri üzrə əməliyyatlar (maliyyə xidmətləri istisna olmaqla)",
-                                            },
-                                            {
-                                                kod: "334",
-                                                sign: "+",
-                                                kod2: "1232",
-                                                ad: "334. Qeyri-maddi aktivlər və torpaqların təqdim edilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "335",
-                                                sign: "+",
-                                                kod2: "1236",
-                                                ad: "335. VM-nin 224.8-ci maddəsinə əsasən Bu Məcəllənin 222.5.5-ci maddəsində göstərilən fəaliyyətlə məşğul olan şəxslər tərəfindən alınmış ərzaq və hazırlanmış qida məhsullarının xarab olması üzrə məbləğ(1 yanvar 2021-ci il tarixədək)",
-                                            },
-                                        ],
-                                    },
-                                    ilave4Gostericiler: {
-                                        ilave4Gosterici: [
-                                            {
-                                                kod: "302",
-                                                sign: "+",
-                                                kod2: "1069",
-                                                ad: "302. ƏDV-yə sıfır(0) dərəcə ilə cəlb edilən əməliyyatların məbləği CƏMİ",
-                                            },
-                                            {
-                                                kod: "302.1",
-                                                sign: "+",
-                                                kod2: "1070",
-                                                ad: "302.1 VM-nin 165.1.1-ci maddəsinə əsasən Azərbaycan Respublikasında akkreditə edilmiş beynəlxalq təşkilatların və xarici ölkələrin diplomatik və konsulluq nümayəndəliklərinin rəsmi istifadəsi, həmçinin, bu nümayəndəliklərin müvafiq statuslu Azərbaycan Respublikasının vətəndaşı olmayan diplomatik və inzibati-texniki işçilərinin, o cümlədən onlarla yaşayan ailə üzvlərinin şəxsi istifadəsi üçün nəzərdə tutulan mallar və xidmətlər",
-                                            },
-                                            {
-                                                kod: "302.2",
-                                                sign: "+",
-                                                kod2: "1071",
-                                                ad: "302.2 VM-nin 165.1.2-ci maddəsinə əsasən qrant müqaviləsi (qərarı) əsasında xaricdən alınan qrantlar hesabına malların idxalı, qrant üzrə resipiyentlərə malların təqdim edilməsi, işlərin görülməsi və xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "302.3",
-                                                sign: "+",
-                                                kod2: "1072",
-                                                ad: "302.3 VM-nin 165.1.3-cü maddəsinə əsasən aparılan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.3.1",
-                                                sign: "+",
-                                                kod2: "2001",
-                                                ad: "302.3.1. VM-nin 165.1.3-cü maddəsinə əsasən malların ixracı üzrə aparılmış əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.3.2",
-                                                sign: "+",
-                                                kod2: "2002",
-                                                ad: "302.3.2. VM-nin 165.1.3-cü maddəsinə əsasən bu Məcəllənin 168.1.5-ci maddəsində göstərilmiş xidmətlərin ixracı üzrə aparılmış əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.4",
-                                                sign: "+",
-                                                kod2: "1073",
-                                                ad: "302.4 VM-nin 165.1.4-cü maddəsinə əsasən beynəlxalq poçt xidmətləri istisna olmaqla, beynəlxalq və tranzit yük və sərnişin daşınması, habelə tranzit yük daşınması ilə bilavasitə bağlı yük aşırılma xidməti. Beynəlxalq və tranzit uçuşlarla bilavasitə bağlı olan işlərin görülməsi, xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "302.5",
-                                                sign: "+",
-                                                kod2: "1074",
-                                                ad: "302.5 VM-nin 165.1.5-ci maddəsinə əsasən Azərbaycan Respublikasının Mərkəzi Bankına qızıl və digər qiymətlilərin göndərilməsi",
-                                            },
-                                            {
-                                                kod: "302.6",
-                                                sign: "+",
-                                                kod2: "2003",
-                                                ad: "302.6 VM-nin 165.1.7-ci maddəsinə əsasən sənaye parkının rezidentinə podratçı tərəfindən, podratçıya isə onunla birbaşa müqavilə bağlamış subpodratçı tərəfindən həmin fəaliyyətin məqsədləri üçün malların təqdim edilməsi, işlərin görülməsi və xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "302.7",
-                                                sign: "+",
-                                                kod2: "1076",
-                                                ad: "302.7 Qanunla təsdiq olunmuş hasilatın pay bölgüsü haqqında, əsas boru kəməri haqqında və digər bu qəbildən olan sazişlərdə və ya qanunlarda, o cümlədən neft və qaz haqqında, ixrac məqsədli neft-qaz fəaliyyəti haqqında qanunlar çərçivəsində aparılan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.7.1",
-                                                sign: "+",
-                                                kod2: "1122",
-                                                ad: "302.7.1 o cümlədən əvvəlcədən alınmış ödənişlər",
-                                            },
-                                            {
-                                                kod: "302.8",
-                                                sign: "+",
-                                                kod2: "1077",
-                                                ad: "302.8 Təqdim ediləcək malların (işlərin, xidmətlərin) hesabına əvvəlcədən alınmış ödənişlər üzrə",
-                                            },
-                                            {
-                                                kod: "302.9",
-                                                sign: "+",
-                                                kod2: "1237",
-                                                ad: "302.9 Vergi Məcəlləsinin 165.1.8-ci maddəsinə əsasən aparılan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.10",
-                                                sign: "+",
-                                                kod2: "1238",
-                                                ad: "302.10 Vergi Məcəlləsinin 165.1.9-cu maddəsinə əsasən aparılan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302.11",
-                                                sign: "+",
-                                                kod2: "1123",
-                                                ad: "302.11 Xüsusi iqtisadi zonalar haqqında qanunlar çərçivəsində aparılan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "302.12",
-                                                sign: "+",
-                                                kod2: "1124",
-                                                ad: "302.12 Azərbaycan Respublikasının tərəfdar çıxdığı beynəlxalq müqavilələr üzrə",
-                                            },
-                                            {
-                                                kod: "302-1",
-                                                sign: "+",
-                                                kod2: "1233",
-                                                ad: "302-1 Elektron ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302-2",
-                                                sign: "+",
-                                                kod2: "1234",
-                                                ad: "302-2 Pərakəndə ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "302-3",
-                                                sign: "+",
-                                                kod2: "1235",
-                                                ad: "302-3 Topdan ticarət üzrə ƏDV-yə sıfır (0) dərəcə ilə cəlb edilən əməliyyatlar",
-                                            },
-                                        ],
-                                    },
-                                    ilave5Gostericiler: {
-                                        ilave5Gosterici: [
-                                            {
-                                                kod: "303",
-                                                sign: "+",
-                                                kod2: "1078",
-                                                ad: "303. ƏDV-dən azad olunan əməliyyatların məbləği CƏMİ",
-                                            },
-                                            {
-                                                kod: "303.1",
-                                                sign: "+",
-                                                kod2: "1079",
-                                                ad: "303.1 VM-nin 164.1.1-ci maddəsinə əsasən özəlləşdirilmə qaydasında dövlət müəssisəsindən satın alınan əmlakın dəyəri, habelə dövlət əmlakının icarəyə verilməsindən alınan icarə haqqının büdcəyə ödənilməli olan hissəsi",
-                                            },
-                                            {
-                                                kod: "303.2",
-                                                sign: "+",
-                                                kod2: "1080",
-                                                ad: "303.2 VM-nin 164.1.2-ci maddəsinə əsasən maliyyə xidmətlərinin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.3",
-                                                sign: "+",
-                                                kod2: "1081",
-                                                ad: "303.3 VM-nin 164.1.3-cü maddəsinə əsasən milli və ya xarici valyutanın (numizmatika məqsədlərindən başqa), həmçinin qiymətli kağızların göndərilməsi",
-                                            },
-                                            {
-                                                kod: "303.4",
-                                                sign: "+",
-                                                kod2: "1083",
-                                                ad: "303.4 VM-nin 164.1.5-ci maddəsinə əsasən idxal olunan əmlak istisna olmaqla müəssisənin Nizamnamə fonduna (kapitalına) pay şəklində hər hansı əmlakın qoyulması (əmlakın pay şəklində qoyuluşu, onun müqabilində bilavasitə digər əmlakın əldə edilməsi ilə əlaqədar olmadıqda)",
-                                            },
-                                            {
-                                                kod: "303.5",
-                                                sign: "+",
-                                                kod2: "1084",
-                                                ad: "303.5 VM-nin 164.1.6-cı maddəsinə əsasən tutulan məbləğlər hədlərində dövlət hakimiyyəti, maliyyə bazarlarına nəzarət, yerli özünüidarəetmə və digər səlahiyyətli orqanların tutduğu dövlət rüsumu, icazə haqları, yığımlar, xüsusi notariusların aldığı haqlar (notariat hərəkətlərinin aparılmasına və notariat hərəkətləri ilə əlaqədar göstərilən xidmətə görə) və onların tutulması müqabilində göstərdiyi xidmətlər",
-                                            },
-                                            {
-                                                kod: "303.6",
-                                                sign: "+",
-                                                kod2: "1085",
-                                                ad: "303.6 VM-nin 164.1.7-ci maddəsinə əsasən kütləvi informasiya vasitələri məhsullarının alqı-satqısının bütün növləri üzrə dövriyyələr, mətbu kütləvi informasiya vasitələri məhsulları istehsalı ilə bağlı redaksiya, nəşriyyat və poliqrafiya fəaliyyəti (reklam xidmətləri istisna olmaqla)",
-                                            },
-                                            {
-                                                kod: "303.7",
-                                                sign: "+",
-                                                kod2: "1086",
-                                                ad: "303.7 VM-nin 164.1.8-ci maddəsinə əsasən ümumtəhsil müəssisələri, habelə peşə təhsili müəssisələri üçün dərslik komplektləri (iş dəftərləri istisna olmaqla) və uşaq ədəbiyyatının istehsalı ilə bağlı redaksiya, nəşriyyat və poliqrafiya fəaliyyəti",
-                                            },
-                                            {
-                                                kod: "303.8",
-                                                sign: "+",
-                                                kod2: "1087",
-                                                ad: "303.8 VM-nin 164.1.9-cu maddəsinə əsasən dəfn və qəbiristanlığın mərasim xidmətləri",
-                                            },
-                                            {
-                                                kod: "303.9",
-                                                sign: "+",
-                                                kod2: "1088",
-                                                ad: "303.9 VM-nin 164.1.10-cu maddəsinə əsasən Azərbaycan Respublikası Mərkəzi Bankının və Azərbaycan Respublikası Dövlət Neft Fondunun qanunvericiliklə nəzərdə tutulmuş vəzifələrinin yerinə yetirilməsi ilə bağlı mal idxalı, iş görülməsi və xidmət göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.10",
-                                                sign: "+",
-                                                kod2: "1089",
-                                                ad: "303.10 VM-nin 164.1.11-ci maddəsinə əsasən Azərbaycan Respublikasına, o cümlədən onu təmsil edən hüquqi şəxslərə neft-qaz ehtiyatlarının kəşfiyyatı, işlənməsi və hasilatın pay bölgüsü, ixrac boru kəmərləri haqqında və bu qəbildən olan digər sazişlərə uyğun olaraq verilməsi nəzərdə tutulan əsas fondların, daşınan əmlakın və digər aktivlərin Azərbaycan Respublikası Dövlət Neft Fonduna və ya Azərbaycan Respublikasını təmsil edən tərəfə hər hansı şəkildə təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "303.11",
-                                                sign: "+",
-                                                kod2: "1091",
-                                                ad: "303.11 VM-nin 164.1.12-ci maddəsinə əsasən metropolitenlə sərnişindaşıma xidmətləri",
-                                            },
-                                            {
-                                                kod: "303.12",
-                                                sign: "+",
-                                                kod2: "1093",
-                                                ad: "303.12 VM-nin 164.1.13-cü maddəsinə əsasən ödənişli təhsil xidmətlərinin göstərilməsi (digər fəaliyyətləri ilə bağlı xidmətlərin göstərilməsi istisna olmaqla)",
-                                            },
-                                            {
-                                                kod: "303.13",
-                                                sign: "+",
-                                                kod2: "3014",
-                                                ad: "303.13 VM-nin 164.1.14-cü maddəsinə əsasən Vergi Məcəllənin 106.1.9-106.1.11-ci maddələri ilə müəyyən olunan aktivlərin dəyəri və onların hər hansı şəkildə təqdim olunması üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "303.14",
-                                                sign: "+",
-                                                kod2: "3017",
-                                                ad: "303.14 VM-nin 164.1.17-ci maddəsinə əsasən hüquqi şəxsin iştirak paylarının və ya səhmlərinin təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "303.15",
-                                                sign: "+",
-                                                kod2: "9092",
-                                                ad: "303.15 VM-nin 164.1.18-ci maddəsinə əsasən kənd təsərrüfatı məhsullarının istehsalçıları (o cümlədən, sənaye üsulu ilə) tərəfindən özlərinin istehsal etdikləri kənd təsərrüfatı məhsullarının satışı üzrə dövriyyələr  ",
-                                            },
-                                            {
-                                                kod: "303.16",
-                                                sign: "+",
-                                                kod2: "1112",
-                                                ad: "303.16 VM-nin 164.1.27-ci maddəsinə əsasən buğdanın idxalı və satışı, buğda ununun və çörəyin istehsalı və satışı  ",
-                                            },
-                                            {
-                                                kod: "303.17",
-                                                sign: "+",
-                                                kod2: "1113",
-                                                ad: "303.17 VM-nin 164.1.29-cu maddəsinə əsasən damazlıq heyvanların idxalı və satış  ",
-                                            },
-                                            {
-                                                kod: "303.18",
-                                                sign: "+",
-                                                kod2: "1114",
-                                                ad: "303.18 VM-nin 164.1.30-cu maddəsinə əsasən toxum və tinglərin idxalı və satışı  ",
-                                            },
-                                            {
-                                                kod: "303.19",
-                                                sign: "+",
-                                                kod2: "1115",
-                                                ad: "303.19 VM-nin 164.1.31-ci maddəsinə əsasən mineral gübrələrin, pestisidlərin idxalı və satışı  ",
-                                            },
-                                            {
-                                                kod: "303.20",
-                                                sign: "+",
-                                                kod2: "1116",
-                                                ad: "303.20 VM-nin 164.1.32-ci maddəsinə əsasən toxumların yetişdirilməsi, quşçuluq və arıçılıq üçün avadanlıqların, o cümlədən laboratoriya avadanlıqlarının, toxum, taxıl və quru paxlalı bitkilərin təmizlənməsi, çeşidlənməsi və ya kalibrlənməsi üçün maşınların idxalı və satışı  ",
-                                            },
-                                            {
-                                                kod: "303.21",
-                                                sign: "+",
-                                                kod2: "1117",
-                                                ad: "303.21 VM-nin 164.1.34-cü maddəsinə əsasən bilavasitə kənd təsərrüfatı təyinatlı suvarma və digər qurğuların, maşınların, avadanlıqların və texnikaların idxalı və satışı  ",
-                                            },
-                                            {
-                                                kod: "303.22",
-                                                sign: "+",
-                                                kod2: "1118",
-                                                ad: "303.22 VM-nin 164.1.36-cı maddəsinə əsasən ödəmə qabiliyyətini itirmiş bankların restrukturizasiya və sağlamlaşdırma tədbirləri çərçivəsində müvafiq icra hakimiyyəti orqanının müəyyən etdiyi qaydada qeyri-işlək (toksik) aktivlərin təqdim edilməsi  ",
-                                            },
-                                            {
-                                                kod: "303.23",
-                                                sign: "+",
-                                                kod2: "1119",
-                                                ad: "303.23 VM-nin 164.1.37-ci maddəsinə əsasən heyvan və quş ətinin satışı",
-                                            },
-                                            {
-                                                kod: "303.24",
-                                                sign: "+",
-                                                kod2: "1214",
-                                                ad: "303.24 VM-nin 164.1.42-ci maddəsinə əsasən \u201CMəşğulluq haqqında\u201D Azərbaycan Respublikasının Qanununa uyğun olaraq müvafiq icra hakimiyyəti orqanının müəyyən etdiyi orqan (qurum) tərəfindən haqqı ödənilən ictimai işlərin təşkili ilə əlaqədar işçi qüvvəsinin təqdim edilməsi üzrə əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "303.25",
-                                                sign: "+",
-                                                kod2: "1240",
-                                                ad: "303.25 VM-nin 164.1.43-cü maddəsinə əsasən kəpəyin istehsalı və satışı",
-                                            },
-                                            {
-                                                kod: "303.26",
-                                                sign: "+",
-                                                kod2: "1241",
-                                                ad: "303.26 VM-nin 164.1.44-cü maddəsinə əsasən Azərbaycan Futbol Federasiyaları Assosiasiyası tərəfindən verilmiş təsdiqedici sənəd əsasında Azərbaycan Respublikasında keçirilən UEFA 2019 Avropa Liqasının final oyunu ilə əlaqədar UEFA, onun yaratdığı qeyri-rezident hüquqi şəxslər və qeyri-rezident futbol klubları (assosiasiyaları) tərəfindən həmin oyunla bağlı malların təqdim edilməsi, işlər görülməsi və xidmətlər göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.27",
-                                                sign: "+",
-                                                kod2: "1242",
-                                                ad: "303.27 VM-nin 164.1.45-ci maddəsinə əsasən Azərbaycan Futbol Federasiyaları Assosiasiyası tərəfindən verilmiş təsdiqedici sənəd əsasında Azərbaycan Respublikasında keçirilən UEFA 2020 Futbol çempionatı ilə əlaqədar UEFA, onu təmsil edən, habelə onun yaratdığı və tərəfindən səlahiyyətləndirilmiş hüquqi şəxslər tərəfindən çempionatla bağlı malların təqdim edilməsi, işlər görülməsi və xidmətlər göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.28",
-                                                sign: "+",
-                                                kod2: "1243",
-                                                ad: "303.28 VM-nin 164.1.46-cı maddəsinə əsasən heyvandarlıq və quşçuluq təsərrüfatlarında istifadə edilən yem və yem əlavələrinin satışı üzrə dövriyyələr",
-                                            },
-                                            {
-                                                kod: "303.29",
-                                                sign: "+",
-                                                kod2: "1244",
-                                                ad: "303.29 VM-nin 164.1.47-ci maddəsinə əsasən bina tikintisi fəaliyyəti ilə məşğul olan şəxslər tərəfindən tikilən binanın yaşayış sahəsinin dövlətə ayrılan hissəsi üzrə dövriyyələr",
-                                            },
-                                            {
-                                                kod: "303.30",
-                                                sign: "+",
-                                                kod2: "1245",
-                                                ad: "303.30 VM-nin 164.1.48-ci maddəsinə əsasən siyahısı müvafiq icra hakimiyyəti orqanının müəyyən etdiyi orqan (qurum) (Prezident) tərəfindən təsdiq edilən dövlət adından yaradılan publik hüquqi şəxslər tərəfindən nizamnaməsində nəzərdə tutulan və ona həvalə edilən vəzifələrin yerinə yetirilməsi üçün büdcə qanunvericiliyinə uyğun olaraq dövlət büdcəsindən ayrılmış vəsait hesabına Maliyyə Nazirliyi ilə bağlanılmış müqavilə əsasında işlərin və xidmətlərin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.31",
-                                                sign: "+",
-                                                kod2: "1246",
-                                                ad: "303.31 VM-nin 164.1.49-cu maddəsinə əsasən Azərbaycan Respublikasında keçirilən Formula 1 və Formula 2 yarışları ilə bağlı Gənclər və İdman Nazirliyi ilə bağlanılmış müqavilə əsasında mal, iş və xidmətin təqdim edilməsi",
-                                            },
-                                            {
-                                                kod: "303.32",
-                                                sign: "+",
-                                                kod2: "1247",
-                                                ad: "303.32 VM-nin 164.1.50-ci maddəsinə əsasən Azərbaycan Respublikasında daimi nümayəndəlik yaratmayan qeyri-rezident şəxslərin mülki aviasiya fəaliyyəti çərçivəsində hava gəmilərinin və hava gəmilərinin mühərriklərinin rezident hüquqi şəxslərə icarəyə və ya lizinqə verilməsi",
-                                            },
-                                            {
-                                                kod: "303.33",
-                                                sign: "+",
-                                                kod2: "1248",
-                                                ad: "303.33 VM-nin 164.1.51-ci maddəsinə əsasən \u201CTibbi sığorta haqqında\u201D Azərbaycan Respublikasının Qanununa uyğun olaraq icbari tibbi sığorta fondunun vəsaiti hesabına tibbi sığorta xidmətlərinin göstərilməsi",
-                                            },
-                                            {
-                                                kod: "303.34",
-                                                sign: "+",
-                                                kod2: "1253",
-                                                ad: "303.34 VM-nin 164.1.55-ci maddəsinə əsasən külçə, sikkə və ya qranul şəklində qızılın və gümüşün satışı",
-                                            },
-                                            {
-                                                kod: "303.35",
-                                                sign: "+",
-                                                kod2: "1090",
-                                                ad: "303.35 Təqdim ediləcək malların (işlərin, xidmətlərin) hesabına əvvəlcədən alınmış ödənişləri",
-                                            },
-                                            {
-                                                kod: "303.36",
-                                                sign: "+",
-                                                kod2: "1125",
-                                                ad: "303.36 Azərbaycan Respublikasının tərəfdar çıxdığı beynəlxalq müqavilələr üzrə",
-                                            },
-                                            {
-                                                kod: "303.37",
-                                                sign: "+",
-                                                kod2: "1126",
-                                                ad: "303.37 Xüsusi iqtisadi zonalar haqqında qanunlar çərçivəsində aparılan əməliyyatlar üzrə",
-                                            },
-                                            {
-                                                kod: "303-1",
-                                                sign: "+",
-                                                kod2: "1249",
-                                                ad: "303-1 Elektron ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "303-2",
-                                                sign: "+",
-                                                kod2: "1250",
-                                                ad: "303-2 Pərakəndə ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
-                                            },
-                                            {
-                                                kod: "303-3",
-                                                sign: "+",
-                                                kod2: "1251",
-                                                ad: "303-3 Topdan ticarət üzrə ƏDV-dən azad olunan əməliyyatlar",
-                                            },
-                                        ],
-                                    },
-                                    ilave1SatirKoduReferanslari: {
-                                        ilave1SatirKoduReferansi: [
-                                            {
-                                                kod2: "102",
-                                                aciklama: "310",
-                                                oran: "0.18",
-                                                faturaTipi: "1",
-                                            },
-                                            {
-                                                kod2: "103",
-                                                aciklama: "311",
-                                                oran: "0.00",
-                                                faturaTipi: "1",
-                                            },
-                                            {
-                                                kod2: "104",
-                                                aciklama: "314",
-                                                oran: "0.18",
-                                                faturaTipi: "1",
-                                            },
-                                            {
-                                                kod2: "105",
-                                                aciklama: "316",
-                                                oran: "0.00",
-                                                faturaTipi: "1",
-                                            },
-                                        ],
-                                    },
-                                    vatBDSatirKoduReferanslari: {
-                                        vatBDSatirKoduReferansi: [
-                                            {
-                                                kod2: "101",
-                                                aciklama: "%18",
-                                                oran: "0.18",
-                                                faturaTipi: "0",
-                                            },
-                                            {
-                                                kod2: "105",
-                                                aciklama: "%0",
-                                                oran: "0.00",
-                                                faturaTipi: "0",
-                                            },
-                                        ],
-                                    },
-                                    sertfikatSerileri: {
-                                        sertfikatSeri: [
-                                            {
-                                                kod2: "101",
-                                                aciklama: "AB",
-                                            },
-                                            {
-                                                kod2: "102",
-                                                aciklama: "AI",
-                                            },
-                                            {
-                                                kod2: "103",
-                                                aciklama: "Az",
-                                            },
-                                            {
-                                                kod2: "104",
-                                                aciklama: "Bin",
-                                            },
-                                            {
-                                                kod2: "105",
-                                                aciklama: "BTC",
-                                            },
-                                            {
-                                                kod2: "106",
-                                                aciklama: "BTƏ",
-                                            },
-                                            {
-                                                kod2: "107",
-                                                aciklama: "C-Q",
-                                            },
-                                            {
-                                                kod2: "108",
-                                                aciklama: "D",
-                                            },
-                                            {
-                                                kod2: "109",
-                                                aciklama: "İn",
-                                            },
-                                            {
-                                                kod2: "110",
-                                                aciklama: "K-Q",
-                                            },
-                                            {
-                                                kod2: "111",
-                                                aciklama: "MK",
-                                            },
-                                            {
-                                                kod2: "112",
-                                                aciklama: "Nx",
-                                            },
-                                            {
-                                                kod2: "113",
-                                                aciklama: "Pd",
-                                            },
-                                            {
-                                                kod2: "114",
-                                                aciklama: "Pr",
-                                            },
-                                            {
-                                                kod2: "115",
-                                                aciklama: "Qr",
-                                            },
-                                            {
-                                                kod2: "116",
-                                                aciklama: "Şd",
-                                            },
-                                            {
-                                                kod2: "117",
-                                                aciklama: "Sur",
-                                            },
-                                            {
-                                                kod2: "118",
-                                                aciklama: {},
-                                            },
-                                            {
-                                                kod2: "119",
-                                                aciklama: "ZHb",
-                                            },
-                                            {
-                                                kod2: "120",
-                                                aciklama: "ZM",
-                                            },
-                                        ],
-                                    },
-                                    gostericilerMuzdlu: {
-                                        gosterici: [
-                                            {
-                                                kod2: "1330",
-                                                sign: "+",
-                                                ad: "330. Cari hesabat ayında və ya hesabat dövrünün 1-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1331",
-                                                sign: "-",
-                                                ad: "330.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                            {
-                                                kod2: "1332",
-                                                sign: "+",
-                                                ad: "331. Hesabat dövrünün 2-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1333",
-                                                sign: "-",
-                                                ad: "331.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                            {
-                                                kod2: "1334",
-                                                sign: "+",
-                                                ad: "332. Hesabat dövrünün 3-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1335",
-                                                sign: "-",
-                                                ad: "332.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                        ],
-                                    },
-                                    gostericilerMuzdlu2: {
-                                        gosterici: [
-                                            {
-                                                kod2: "1336",
-                                                sign: "+",
-                                                ad: "330. Cari hesabat ayında və ya hesabat dövrünün 1-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1337",
-                                                sign: "-",
-                                                ad: "330.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                            {
-                                                kod2: "1338",
-                                                sign: "+",
-                                                ad: "331. Hesabat dövrünün 2-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1339",
-                                                sign: "-",
-                                                ad: "331.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                            {
-                                                kod2: "1340",
-                                                sign: "+",
-                                                ad: "332. Hesabat dövrünün 3-Cİ AYI -nda muzdlu işlə əlaqədar hesablamalar",
-                                            },
-                                            {
-                                                kod2: "1341",
-                                                sign: "-",
-                                                ad: "332.1 o cümlədən xarici fiziki şəxslər üzrə",
-                                            },
-                                        ],
-                                    },
-                                },
-                            };
-
-                            let targets = [
-                                {
-                                    name: "edvGosterici",
-                                    data: structure["kodlar"]["edvGostericiler"]["edvGosterici"],
-                                    prop: props,
-                                },
-                                {
-                                    name: "edvBorcGosterici",
-                                    data: structure["kodlar"]["edvDebitorBorcGostericiler"]["edvBorcGosterici"],
-                                    prop: {
-                                        borcEvvel: "Hesabat dövrünün əvvəlinə debitor borc məbləği",
-                                        borcYaranan: "Hesabat dövrü (ay) üzrə yaranan debitor borc məbləği",
-                                        borcSilinen: "Hesabat dövrü (ay) ərzində silinən debitor borc məbləği",
-                                        borcSon: "Hesabat dövrünün sonuna debitor borc məbləği",
-                                    },
-                                },
-                                {
-                                    name: "edvAvazGosterici",
-                                    data: structure["kodlar"]["edvAvazGostericiler"]["edvAvazGosterici"],
-                                    parent:'HesaplamaUzreEnt',
-                                    prop: {
-                                        edvsiz: "Ödənilmiş məbləğ (ƏDV nəzərə alınmadan)",
-                                        edv: "Əlavə dəyər vergisi məbləği",
-                                    },
-                                    parent: 'HesaplamaAvazEnt'
-                                },
-                                {
-                                    name: "edvDegisGosterici",
-                                    data: structure["kodlar"]["edvDegisGostericiler"]["edvDegisGosterici"],
-                                    prop: props,
-                                    parent:'HesaplamaDegisEnt'
-                                },
-                                {
-                                    name: "edvHesaplasma",
-                                    data: structure["kodlar"]["edvHesaplasmalar"]["edvHesaplasma"],
-                                    prop: {meblag:'ƏDV Məbləği'},
-                                    parent:'ozel',
-                                },
-                                {},
-                                {
-                                    name: "ilave1Gosterici",
-                                    data: structure["kodlar"]["ilave1Gostericiler"]["ilave1Gosterici"],
-                                    prop: {
-                                        edvsiz: "Malın ƏDV-siz ümumi dəyəri",
-                                        edvMeblag: "Malın ƏDV məbləği",
-                                    },
-                                },
-                                {
-                                    name: "ilave1GostericiEvvel",
-                                    data: structure["kodlar"]["ilave1GostericilerEvvel"][
-                                        "ilave1GostericiEvvel"
-                                    ],
-                                    prop: {
-                                        edvsiz: "Malın ƏDV-siz ümumi dəyəri",
-                                        edvMeblag: "Malın ƏDV məbləği",
-                                    },
-                                },
-                                {},
-                                {
-                                    name: "ilave3Bolum2Gosterici",
-                                    data: structure["kodlar"]["ilave3Bolum2Gostericiler"][
-                                        "ilave3Bolum2Gosterici"
-                                    ],
-                                    parent:'EdvAmeliyyatEnt',
-                                    prop: {
-                                        deyer:
-                                        "Təqdim edilmiş mal, iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
-                                        meblag: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
-                                    },
-                                },
-                                {
-                                    name: "ilave3Bolum3Gosterici",
-                                    data: structure["kodlar"]["ilave3Bolum3Gostericiler"][
-                                        "ilave3Bolum3Gosterici"
-                                    ],
-                                    parent:'EdvAmeliyyatEnt',
-                                    prop: {
-                                        deyer:
-                                        "Təqdim edilmiş mal, iş və xidmətlərin dəyəri (ƏDV nəzərə alınmadan)",
-                                        meblag: "Daxil olmuş məbləğ (ƏDV nəzərə alınmadan)",
-                                    },
-                                },
-                                {},
-                                {
-                                    name: "ilave4Gosterici",
-                                    data: structure["kodlar"]["ilave4Gostericiler"]["ilave4Gosterici"],
-                                    parent:'SifirEdvEnt',
-                                    prop: {
-                                        deyer: "Təqdim edilmiş mal, iş və xidmətlərin dəyəri",
-                                        meblag: "Daxil olmuş məbləğ",
-                                    },
-                                },
-                                {},
-                                {
-                                    name: "ilave5Gosterici",
-                                    data: structure["kodlar"]["ilave5Gostericiler"]["ilave5Gosterici"],
-                                    parent: 'AzadEdvEnt',
-                                    prop: {
-                                        deyer: "Təqdim edilmiş mal, iş və xidmətlərin dəyəri",
-                                        meblag: "Daxil olmuş məbləğ",
-                                    },
-                                },
-                                {},
-                                {
-                                    name: "gostericilerMuzdlu",
-                                    data: structure["kodlar"]["gostericilerMuzdlu"]["gosterici"],
-                                    prop: props,
-                                },
-                                {
-                                    name: "gostericilerMuzdlu2",
-                                    data: structure["kodlar"]["gostericilerMuzdlu2"]["gosterici"],
-                                    prop: props,
-                                },
-                            ];
-                            if ( i === 0 ){
-                                table = document.createElement("table");
-                                thead = document.createElement("thead");
-                                tbody = document.createElement("tbody");
-                                th1 = document.createElement("tr");
-                                th1.className = "th1";
-                                th = document.createElement("th");
-                                th.textContent = "DÖVR";
-                                th.colSpan = 2;
-                                th1.appendChild(th);
-                                th2 = document.createElement("tr");
-                                th2.className = "th2";
-                                th2.appendChild(
+                                let tr = document.createElement("tr");
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("İl")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(XMLDoc.querySelector("yil").textContent)
+                                    ).parentNode
                                 );
-                                th2.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Ay")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            ("0" + XMLDoc.querySelector("ay").textContent).substring(
+                                                XMLDoc.querySelector("ay").textContent.length - 1,
+                                                3
+                                            )
+                                        )
+                                    ).parentNode
                                 );
-
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Tarix")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            date + " " + time
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Növ")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            dec.querySelector('td:nth-child(11)').textContent
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Təqdim edən")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            dec.querySelector("td:nth-child(10)").textContent
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                let count = [...decNodes].filter(d=>d.querySelector("td:nth-child(8)").textContent === dec.querySelector("td:nth-child(8)").textContent).length;
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Say")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            count
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Sıra")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            "0"
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Əks-Sıra")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            "0"
+                                        )
+                                    ).parentNode
                                 );
-                                th1.appendChild(
+                                tr.appendChild(
                                     document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Seçim")).parentNode
+                                    .createElement("td")
+                                    .appendChild(
+                                        document.createTextNode(
+                                            ""
+                                        )
+                                    ).parentNode
                                 );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Tarix")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Növ")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Təqdim edən")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Say")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Sıra")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Əks-Sıra")).parentNode
-                                );
-                                th2.appendChild(
-                                    document
-                                    .createElement("th")
-                                    .appendChild(document.createTextNode("Seçim")).parentNode
-                                );
-                                thead.appendChild(th1);
-                                thead.appendChild(th2);
-
                                 for (let j = 0; j < targets.length; j++) {
                                     let target = targets[j];
-                                    let { name, data, prop } = target;
+                                    let { name, parent, data, prop } = target;
                                     if (Object.keys(target).length) {
                                         for (let h = 0; h < data.length; h++) {
                                             let node = data[h];
-                                            let th = document.createElement("th");
-                                            th.textContent = node?.ad;
-                                            th.colSpan = Object.keys(prop).length;
-                                            th1.appendChild(th);
-                                            for (let m = 0; m < Object.keys(prop).length; m++) {
-                                                let key = Object.keys(prop)[m];
-                                                let th = document.createElement("th");
-                                                th.textContent = prop[Object.keys(prop)[m]];
-                                                th2.appendChild(th);
+                                            for (let l = 0; l < Object.keys(prop).length; l++) {
+                                                let key = Object.keys(prop)[l];
+                                                let td = document.createElement("td");
+                                                if (key === "dedv") {
+                                                    td.textContent = String(
+                                                        Math.round(Number(getElement(node.kod2), parent, "deyer") * 0.18 * 100) /
+                                                        100
+                                                    ).replace(".", ",");
+                                                } else {
+                                                    td.textContent = String(getElement(node.kod2, parent, key)).replace(
+                                                        ".",
+                                                        ","
+                                                    );
+                                                }
+                                                tr.appendChild(td);
                                             }
                                         }
                                     } else {
-                                        let th = document.createElement("th");
-                                        th1.appendChild(th);
-                                        th = document.createElement("th");
-                                        th2.appendChild(th);
-                                        let tr = document.createElement("tr");
                                         let td = document.createElement("td");
                                         tr.appendChild(td);
                                     }
                                 }
-                            }
-                            let tr = document.createElement("tr");
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(XMLDoc.querySelector("yil").textContent)
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        ("0" + XMLDoc.querySelector("ay").textContent).substring(
-                                            XMLDoc.querySelector("ay").textContent.length - 1,
-                                            3
-                                        )
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        date + " " + time
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        dec.querySelector('td:nth-child(11)').textContent
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        dec.querySelector("td:nth-child(10)").textContent
-                                    )
-                                ).parentNode
-                            );
-                            let count = [...decNodes].filter(d=>d.querySelector("td:nth-child(8)").textContent === dec.querySelector("td:nth-child(8)").textContent).length;
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        count
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        "0"
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        "0"
-                                    )
-                                ).parentNode
-                            );
-                            tr.appendChild(
-                                document
-                                .createElement("td")
-                                .appendChild(
-                                    document.createTextNode(
-                                        ""
-                                    )
-                                ).parentNode
-                            );
-                            for (let j = 0; j < targets.length; j++) {
-                                let target = targets[j];
-                                let { name, parent, data, prop } = target;
-                                if (Object.keys(target).length) {
-                                    for (let h = 0; h < data.length; h++) {
-                                        let node = data[h];
-                                        for (let l = 0; l < Object.keys(prop).length; l++) {
-                                            let key = Object.keys(prop)[l];
-                                            let td = document.createElement("td");
-                                            if (key === "dedv") {
-                                                td.textContent = String(
-                                                    Math.round(Number(getElement(node.kod2), parent, "deyer") * 0.18 * 100) /
-                                                    100
-                                                ).replace(".", ",");
-                                            } else {
-                                                td.textContent = String(getElement(node.kod2, parent, key)).replace(
-                                                    ".",
-                                                    ","
-                                                );
-                                            }
-                                            tr.appendChild(td);
-                                        }
-                                    }
-                                } else {
-                                    let td = document.createElement("td");
-                                    tr.appendChild(td);
-                                }
-                            }
-                            tbody.appendChild(tr);
-                            if (i === decs.length-1){
-                                table.appendChild(thead);
-                                table.appendChild(tbody);
-                                table.style.borderCollapse = "collapse";
-                                th2.querySelector("th").style.width = "50px";
-                                let children = tbody.children;
-                                let sorted = [...children].sort((a,b)=>{
-                                    return (Number(a.children[0].textContent) - Number(b.children[0].textContent) || Number(a.children[1].textContent) - Number(b.children[1].textContent) || dateToString(a.children[2].textContent) - dateToString(b.children[2].textContent))
-                                })
-                                tbody.replaceChildren(...sorted)
-                                let tr = document.createElement("tr");
-                                for (let t = 0; t <= 8; t++){
-                                    tr.appendChild(document.createElement("td"));
-                                }
-
-                                for (let r1 = 0; r1 < tbody.children.length; r1++) {
-                                    let c = 0;
-                                    if (lastPaket){
-                                        tbody.children[r1].children[6].textContent = tbody.children[r1].children[5].textContent
-                                        tbody.children[r1].children[7].textContent = 1
-                                        tbody.children[r1].children[8].textContent = "+"
-                                    } else {
-                                        for (let r2 = 0; r2 <= r1; r2++) {
-                                            if(tbody.children[r2].children[0].textContent === tbody.children[r1].children[0].textContent && tbody.children[r2].children[1].textContent === tbody.children[r1].children[1].textContent){
-                                                c++
-                                            }
-                                        }
-                                        tbody.children[r1].children[6].textContent = c
-                                        tbody.children[r1].children[7].textContent = Number(tbody.children[r1].children[5].textContent) - c + 1
-                                        if (tbody.children[r1].children[5].textContent===tbody.children[r1].children[6].textContent){
-                                            tbody.children[r1].children[8].textContent = '+'
-                                        }
-                                    }
-
-                                }
-
-                                for (let c = 9; c <= [...tbody?.children?.[0]?.children].at(-1)?.cellIndex; c++) {
-                                    let sum = 0;
-                                    for (let r = 0; r < tbody.children.length; r++) {
-                                        sum +=
-                                            Math.round(
-                                            Number(tbody.children[r].children[c].textContent.replace(",", ".")) *
-                                            100
-                                        ) / 100;
-                                    }
-                                    let td = document.createElement("td");
-                                    td.textContent = String(Math.round(sum * 100) / 100).replace('.',',');
-                                    tr.appendChild(td);
-                                }
                                 tbody.appendChild(tr);
-                                let newTab = window.open('')
-                                newTab.document.body.appendChild(table);
-                                newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black;width: 100px ;min-width: 50px;}; </style>')
+                                if (i === decs.length-1){
+                                    table.appendChild(thead);
+                                    table.appendChild(tbody);
+                                    table.style.borderCollapse = "collapse";
+                                    th2.querySelector("th").style.width = "50px";
+                                    let children = tbody.children;
+                                    let sorted = [...children].sort((a,b)=>{
+                                        return (Number(a.children[0].textContent) - Number(b.children[0].textContent) || Number(a.children[1].textContent) - Number(b.children[1].textContent) || dateToString(a.children[2].textContent) - dateToString(b.children[2].textContent))
+                                    })
+                                    tbody.replaceChildren(...sorted)
+                                    let tr = document.createElement("tr");
+                                    for (let t = 0; t <= 8; t++){
+                                        tr.appendChild(document.createElement("td"));
+                                    }
+
+                                    for (let r1 = 0; r1 < tbody.children.length; r1++) {
+                                        let c = 0;
+                                        if (lastPaket){
+                                            tbody.children[r1].children[6].textContent = tbody.children[r1].children[5].textContent
+                                            tbody.children[r1].children[7].textContent = 1
+                                            tbody.children[r1].children[8].textContent = "+"
+                                        } else {
+                                            for (let r2 = 0; r2 <= r1; r2++) {
+                                                if(tbody.children[r2].children[0].textContent === tbody.children[r1].children[0].textContent && tbody.children[r2].children[1].textContent === tbody.children[r1].children[1].textContent){
+                                                    c++
+                                                }
+                                            }
+                                            tbody.children[r1].children[6].textContent = c
+                                            tbody.children[r1].children[7].textContent = Number(tbody.children[r1].children[5].textContent) - c + 1
+                                            if (tbody.children[r1].children[5].textContent===tbody.children[r1].children[6].textContent){
+                                                tbody.children[r1].children[8].textContent = '+'
+                                            }
+                                        }
+
+                                    }
+
+                                    for (let c = 9; c <= [...tbody?.children?.[0]?.children].at(-1)?.cellIndex; c++) {
+                                        let sum = 0;
+                                        for (let r = 0; r < tbody.children.length; r++) {
+                                            sum +=
+                                                Math.round(
+                                                Number(tbody.children[r].children[c].textContent.replace(",", ".")) *
+                                                100
+                                            ) / 100;
+                                        }
+                                        let td = document.createElement("td");
+                                        td.textContent = String(Math.round(sum * 100) / 100).replace('.',',');
+                                        tr.appendChild(td);
+                                    }
+                                    tbody.appendChild(tr);
+                                    let newTab = window.open('')
+                                    newTab.document.body.appendChild(table);
+                                    newTab.document.head.insertAdjacentHTML('beforeend','<style> table {borderCollapse:collapse} td,th {border: 1px solid black;width: 100px ;min-width: 50px;}; </style>')
+                                }
+
                             }
 
+                        } catch (error){
                         }
+
 
                     }
                     if (onePaket && dl){
