@@ -419,7 +419,7 @@ const func = async () => {
             for(let i = 0; i<= 100;i++){
                 try {
                     await sleep(1000)
-                    let token = document?.cookie?.match(/\stoken=(.*?);/)?.[1]
+                    let token = document?.cookie?.match(/\s?token=(.*?);/)?.[1]
                     let btn = document.createElement('button')
                     btn.style.backgroundColor = 'transparent';
                     btn.style.width = '100%'
@@ -1607,11 +1607,12 @@ const func = async () => {
                             .replace(');', '')
                             .replace(/'/g, '')
                             .split(',')
-                            const parts = dec.title.split(' ')
-                            const xmlName = parts[2]
-                            const date = parts[5]
+                            const title = dec.title
+                            const parts = title.replace(PACKAGE_NAME, '').split(' - ')
+                            const xmlName = parts[1].slice(0, -13)
+                            const date = parts[1].slice(-10)
                             const dateReverse = date.split('.').reverse().join('.')
-                            const time = parts[7]
+                            const time = parts[2]
                             let pckg = await localforage.getItem(PACKAGE_OID+'|'+PACKAGE_NAME)
                             let blob;
                             if (pckg && pckg.size >= 1024 ){
@@ -3344,6 +3345,7 @@ const func = async () => {
                             }
 
                         } catch (error){
+                            console.log(error)
                         }
 
 
