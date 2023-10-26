@@ -104,21 +104,10 @@ const func = async () => {
                 document.querySelector("#sidebarMenu a[href='/doFlow?doc=PG_QAIME_1']")?.addEventListener('click',()=>{sessionStorage.removeItem("docoidToCopy")})
                 const html = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.printQaime", {
                     "headers": {
-                        "accept": "text/plain, */*; q=0.01",
-                        "accept-language": "en-US,en;q=0.9",
                         "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                        "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"92\"",
-                        "sec-ch-ua-mobile": "?0",
-                        "sec-fetch-dest": "empty",
-                        "sec-fetch-mode": "cors",
-                        "sec-fetch-site": "same-origin",
-                        "x-requested-with": "XMLHttpRequest"
                     },
-                    "referrerPolicy": "strict-origin-when-cross-origin",
                     "body": "docOidList%5B%5D=" + docoid,
                     "method": "POST",
-                    "mode": "cors",
-                    "credentials": "include"
                 }).then(response =>response.json())
                 .then(response=>b64DecodeUnicode(response.htmlList[0]))
                 .then(response=>new DOMParser().parseFromString(response,'text/html'))
@@ -446,6 +435,101 @@ const func = async () => {
             }
         }
         if (['getDocList','getAllDocList','getDrafts'].some(x=>window.location.href.includes(x))){
+
+            (()=>{
+
+                const adaptive_choice = document.createElement('button')
+                adaptive_choice.type = 'button'
+                adaptive_choice.className = 'btn bg-green-800'
+                adaptive_choice.id = 'userChecker'
+                adaptive_choice.style.marginLeft = '10px'
+                adaptive_choice.checked = false;
+                adaptive_choice.addEventListener('click',adaptive_choice_handler)
+                adaptive_choice.appendChild(document.createTextNode('Adaptiv Seçim'))
+                document.querySelector("#areaApp > div > div > div > div > div.col-md-10.docbuttons > div").appendChild(adaptive_choice)
+                async function adaptive_choice_handler(){
+                    const table = document.querySelector("#default-datatable")
+                    if (table){
+                        const sleep = ms=>new Promise(res=>setTimeout(res, ms))
+                        const tbody = table.tBodies[0]
+                        const count = tbody.rows.length
+                        const docOids = [...tbody.rows].map(tr=>tr.dataset.docoid)
+                        const cond = async(nums)=>{
+                            const payload = docOids.filter((_,i)=>nums.includes(i)).map(v=>'docOidList%5B%5D=' + v).join('&')
+                            for (let i = 0; i < 5; i++) {
+                                try {
+                                    const response = await fetch("https://qaime.e-taxes.gov.az/service/eroom.getDocWfPartnerList", {
+                                        "headers": {
+                                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                        },
+                                        "body": payload,
+                                        "method": "POST",
+                                    }).then(resp=>resp.json())
+                                    const result = response?.result
+                                    return Number(result) === 1
+                                } catch (error) {
+                                    await sleep(2000)
+                                }
+                            }
+                            return false
+                        }
+                        let min = 0
+                        let max = count - 1
+                        let indexes = [[], []]
+                        for (let m = min; m <= max; m++) {
+                            indexes[0].push(m)
+                        }
+                        let s = indexes[0].length
+                        let a = indexes[0].length
+                        let cur = true
+                        for (let p = 0; p < 10000; p++) {
+                            let ind = indexes[0].slice(0, s)
+                            let prev = cur
+                            cur = await cond(ind)
+                            if (cur && s === indexes[0].length) {
+                                //console.log(p)
+                                break
+                            }
+                            if (prev && !cur && a === 1) {
+                                const el = ind.at(-1)
+                                const index = indexes[0].findIndex(v=>v === el)
+                                indexes[1].push(el)
+                                indexes[0].splice(index, 1)
+                                if (ind.length < indexes[1].length) {//indexes = [indexes[1], indexes[0]]
+                                }
+                                s = indexes[0].length
+                                a = indexes[0].length
+                                continue
+                            } else if (!prev && cur && a === -1) {
+                                const el = indexes[0][s]
+                                const index = indexes[0].findIndex(v=>v === el)
+                                indexes[1].push(el)
+                                indexes[0].splice(index, 1)
+                                if (ind.length < indexes[1].length) {// indexes = [indexes[1], indexes[0]]
+                                }
+                                s = indexes[0].length
+                                a = indexes[0].length
+                                continue
+                            }
+                            if (cur) {
+                                a = Math.max(parseInt(Math.abs(a) / 2), 1)
+                            } else {
+                                a = Math.min(0 - parseInt(Math.abs(a) / 2), -1)
+                            }
+                            s += a
+                        }
+                        indexes[0].forEach(index=>{
+                            try {
+                                tbody.rows[index].querySelector("td > div > span").classList.add('checked')
+                            } catch(error){
+                                console.log(index)
+                            }
+                        })
+                        document.querySelector("#areaApp > div > div > div > div > div.col-md-10.docbuttons > div > button.btn.bg-green-800.dropdown-toggle.chooseAllOperations").disabled = false
+                    }
+                }
+            })()
+
             let interval = 15 * 60 * 1000;
             function reloadPage(){
                 window.location.reload()
@@ -825,22 +909,10 @@ const func = async () => {
                         const data = `qaimeSeria=${ser}&qaimeNumber=${No}`
                         fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
                             "headers": {
-                                "accept": "text/plain, */*; q=0.01",
-                                "accept-language": "en-US,en;q=0.9",
                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                "sec-ch-ua-mobile": "?0",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin",
-                                "x-requested-with": "XMLHttpRequest"
                             },
-                            "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                            "referrerPolicy": "strict-origin-when-cross-origin",
                             "body": data,
                             "method": "POST",
-                            "mode": "cors",
-                            "credentials": "include"
                         }).then(response=>response.json())
                             .then(async response=>{
                             if (response.response.code==='1114'){
@@ -854,44 +926,20 @@ const func = async () => {
                             const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
                             fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                 "headers": {
-                                    "accept": "text/plain, */*; q=0.01",
-                                    "accept-language": "en-US,en;q=0.9",
                                     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                    "sec-ch-ua-mobile": "?0",
-                                    "sec-fetch-dest": "empty",
-                                    "sec-fetch-mode": "cors",
-                                    "sec-fetch-site": "same-origin",
-                                    "x-requested-with": "XMLHttpRequest"
                                 },
-                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                "referrerPolicy": "strict-origin-when-cross-origin",
                                 "body": data,
                                 "method": "POST",
-                                "mode": "cors",
-                                "credentials": "include"
                             }).then(response=>response.json())
                                 .then(async response=>{
                                 if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
                                     const data = `year=${year}&type=01&vhfSeria=${ser}&month=${month}&vhfNum=${No}`
                                     fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                         "headers": {
-                                            "accept": "text/plain, */*; q=0.01",
-                                            "accept-language": "en-US,en;q=0.9",
                                             "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                            "sec-ch-ua-mobile": "?0",
-                                            "sec-fetch-dest": "empty",
-                                            "sec-fetch-mode": "cors",
-                                            "sec-fetch-site": "same-origin",
-                                            "x-requested-with": "XMLHttpRequest"
                                         },
-                                        "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                        "referrerPolicy": "strict-origin-when-cross-origin",
                                         "body": data,
                                         "method": "POST",
-                                        "mode": "cors",
-                                        "credentials": "include"
                                     }).then(response=>response.json())
                                         .then(async response=> {
                                         const detailOid = response.refundListDTO[0].detailOid
@@ -900,42 +948,18 @@ const func = async () => {
                                         } else if(Number(response.refundListDTO[0].odenilmisEdvsiz)!==Number(amount)){
                                             fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
                                                 "headers": {
-                                                    "accept": "text/plain, */*; q=0.01",
-                                                    "accept-language": "en-US,en;q=0.9",
                                                     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                                    "sec-ch-ua-mobile": "?0",
-                                                    "sec-fetch-dest": "empty",
-                                                    "sec-fetch-mode": "cors",
-                                                    "sec-fetch-site": "same-origin",
-                                                    "x-requested-with": "XMLHttpRequest"
                                                 },
-                                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                                "referrerPolicy": "strict-origin-when-cross-origin",
                                                 "body": `evezDetailOid%5B%5D=${detailOid}`,
                                                 "method": "POST",
-                                                "mode": "cors",
-                                                "credentials": "include"
                                             }).then(async ()=>{
                                                 const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
                                                 fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                                     "headers": {
-                                                        "accept": "text/plain, */*; q=0.01",
-                                                        "accept-language": "en-US,en;q=0.9",
                                                         "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                                        "sec-ch-ua-mobile": "?0",
-                                                        "sec-fetch-dest": "empty",
-                                                        "sec-fetch-mode": "cors",
-                                                        "sec-fetch-site": "same-origin",
-                                                        "x-requested-with": "XMLHttpRequest"
                                                     },
-                                                    "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                                    "referrerPolicy": "strict-origin-when-cross-origin",
                                                     "body": data,
                                                     "method": "POST",
-                                                    "mode": "cors",
-                                                    "credentials": "include"
                                                 }).then(response=>response.json())
                                                     .then(response=>{
                                                     if (response.response.code==='1114'){
@@ -970,22 +994,10 @@ const func = async () => {
                     await sleep(timeout)
                     await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getEqaimeAmounts", {
                         "headers": {
-                            "accept": "text/plain, */*; q=0.01",
-                            "accept-language": "en-US,en;q=0.9",
                             "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                            "sec-ch-ua-mobile": "?0",
-                            "sec-fetch-dest": "empty",
-                            "sec-fetch-mode": "cors",
-                            "sec-fetch-site": "same-origin",
-                            "x-requested-with": "XMLHttpRequest"
                         },
-                        "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                        "referrerPolicy": "strict-origin-when-cross-origin",
                         "body": data,
                         "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
                     }).then(response=>response.json())
                         .then(async response=>{
                         if (response.response.code==='1114'){
@@ -1000,22 +1012,10 @@ const func = async () => {
                         await sleep(timeout)
                         await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                             "headers": {
-                                "accept": "text/plain, */*; q=0.01",
-                                "accept-language": "en-US,en;q=0.9",
                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                "sec-ch-ua-mobile": "?0",
-                                "sec-fetch-dest": "empty",
-                                "sec-fetch-mode": "cors",
-                                "sec-fetch-site": "same-origin",
-                                "x-requested-with": "XMLHttpRequest"
                             },
-                            "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                            "referrerPolicy": "strict-origin-when-cross-origin",
                             "body": data,
                             "method": "POST",
-                            "mode": "cors",
-                            "credentials": "include"
                         }).then(response=>response.json())
                             .then(async response=>{
                             if (response.response.message.includes('Qeyd edilən e-qaimə faktura əvəzləşəcəklər siyahısında var.')){
@@ -1023,22 +1023,10 @@ const func = async () => {
                                 await sleep(timeout)
                                 await fetch("https://qaime.e-taxes.gov.az/service/eqaime.getRefundedList", {
                                     "headers": {
-                                        "accept": "text/plain, */*; q=0.01",
-                                        "accept-language": "en-US,en;q=0.9",
                                         "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                        "sec-ch-ua-mobile": "?0",
-                                        "sec-fetch-dest": "empty",
-                                        "sec-fetch-mode": "cors",
-                                        "sec-fetch-site": "same-origin",
-                                        "x-requested-with": "XMLHttpRequest"
                                     },
-                                    "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                    "referrerPolicy": "strict-origin-when-cross-origin",
                                     "body": data,
                                     "method": "POST",
-                                    "mode": "cors",
-                                    "credentials": "include"
                                 }).then(response=>response.json())
                                     .then(async response=>{
                                     const detailOid = response.refundListDTO[0].detailOid
@@ -1048,43 +1036,19 @@ const func = async () => {
                                         await sleep(timeout)
                                         await fetch("https://qaime.e-taxes.gov.az/service/eqaime.deleteRefundInfo", {
                                             "headers": {
-                                                "accept": "text/plain, */*; q=0.01",
-                                                "accept-language": "en-US,en;q=0.9",
                                                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                                "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                                "sec-ch-ua-mobile": "?0",
-                                                "sec-fetch-dest": "empty",
-                                                "sec-fetch-mode": "cors",
-                                                "sec-fetch-site": "same-origin",
-                                                "x-requested-with": "XMLHttpRequest"
                                             },
-                                            "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                            "referrerPolicy": "strict-origin-when-cross-origin",
                                             "body": `evezDetailOid%5B%5D=${detailOid}`,
                                             "method": "POST",
-                                            "mode": "cors",
-                                            "credentials": "include"
                                         }).then(async ()=>{
                                             const data = `qaimeOid=${qaimeOid}&vhfSeria=${ser}&vhfNum=${No}&odenilmishEdv=${vat}&odenilmishEdvsiz=${amount}&setirKodu=${rowNo}&year=${year}&type=01&month=${month}`
                                             await sleep(timeout)
                                             await fetch("https://qaime.e-taxes.gov.az/service/eqaime.saveRefundInfo", {
                                                 "headers": {
-                                                    "accept": "text/plain, */*; q=0.01",
-                                                    "accept-language": "en-US,en;q=0.9",
                                                     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                                                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                                                    "sec-ch-ua-mobile": "?0",
-                                                    "sec-fetch-dest": "empty",
-                                                    "sec-fetch-mode": "cors",
-                                                    "sec-fetch-site": "same-origin",
-                                                    "x-requested-with": "XMLHttpRequest"
                                                 },
-                                                "referrer": "https://qaime.e-taxes.gov.az/PG_REFUND",
-                                                "referrerPolicy": "strict-origin-when-cross-origin",
                                                 "body": data,
                                                 "method": "POST",
-                                                "mode": "cors",
-                                                "credentials": "include"
                                             }).then(response=>response.json())
                                                 .then(response=>{
                                                 if (response.response.code==='1114'){
@@ -1228,17 +1192,7 @@ const func = async () => {
                 const token = document.querySelector("#MTOKEN").value
                 const doc = new DOMParser().parseFromString(await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                     "headers": {
-                        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                        "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                        "cache-control": "max-age=0",
                         "content-type": "application/x-www-form-urlencoded",
-                        "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                        "sec-ch-ua-mobile": "?0",
-                        "sec-fetch-dest": "document",
-                        "sec-fetch-mode": "navigate",
-                        "sec-fetch-site": "same-origin",
-                        "sec-fetch-user": "?1",
-                        "upgrade-insecure-requests": "1"
                     },
                     "body": `cmd=EDVINSERTJSPSRV&TOKEN=${token}`,
                     'method':'POST',
@@ -1379,17 +1333,7 @@ const func = async () => {
 
                     const doc = new DOMParser().parseFromString(await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                         "headers": {
-                            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "cache-control": "max-age=0",
                             "content-type": "application/x-www-form-urlencoded",
-                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                            "sec-ch-ua-mobile": "?0",
-                            "sec-fetch-dest": "document",
-                            "sec-fetch-mode": "navigate",
-                            "sec-fetch-site": "same-origin",
-                            "sec-fetch-user": "?1",
-                            "upgrade-insecure-requests": "1"
                         },
                         "body": `cmd=EDVINSERTJSPSRV&TOKEN=${token}`,
                         'method':'POST',
@@ -1413,21 +1357,9 @@ const func = async () => {
 
                         await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                             "headers": {
-                                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                                "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                                "cache-control": "max-age=0",
                                 "content-type": "application/x-www-form-urlencoded",
-                                "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
-                                "sec-ch-ua-mobile": "?0",
-                                "sec-fetch-dest": "document",
-                                "sec-fetch-mode": "navigate",
-                                "sec-fetch-site": "same-origin",
-                                "sec-fetch-user": "?1",
-                                "upgrade-insecure-requests": "1"
                             },
                             "method":"POST",
-                            "referrer": "https://www.e-taxes.gov.az/vedop2/ebyn/dispatch",
-                            "referrerPolicy": "strict-origin-when-cross-origin",
                             "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${myTaxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${taxId}&edhOperationAmount=${amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
                         }
                                    );
@@ -1535,24 +1467,10 @@ const func = async () => {
                     const Paket = new JSZip();
                     const vergiAd = await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
                         "headers": {
-                            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                            "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "cache-control": "max-age=0",
                             "content-type": "application/x-www-form-urlencoded",
-                            "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                            "sec-ch-ua-mobile": "?0",
-                            "sec-fetch-dest": "document",
-                            "sec-fetch-mode": "navigate",
-                            "sec-fetch-site": "same-origin",
-                            "sec-fetch-user": "?1",
-                            "upgrade-insecure-requests": "1"
                         },
-                        "referrer": "https://www.e-taxes.gov.az/vedop2/ebyn/dispatch",
-                        "referrerPolicy": "strict-origin-when-cross-origin",
                         "body": `cmd=SICILVDGORUNTULE&TOKEN=${token}`,
-                        "method": "POST",
-                        "mode": "cors",
-                        "credentials": "include"
+                        "method": "POST"
                     }).then((response) => response.text())
                     .then(html=>new DOMParser().parseFromString(html,'text/html')).then(doc=>doc.querySelector("col.table_header").parentElement.parentElement.querySelector("tbody > tr:nth-child(3) > td:nth-child(2)").textContent)
                     const data = `TOKEN=${token}&cmd=BEYANNAMELISTESI&grupSayi=0&${document.querySelector('[name="sorguTipiN"]').checked ? 'sorguTipiN=1&':''}vergiNo=${vergiNo}&${document.querySelector('[name="sorguTipiB"]').checked ? 'sorguTipiB=1&':''}beyannameTanim=${decType}&${document.querySelector('[name="sorguTipiP"]').checked ? 'sorguTipiP=1&':''}donemBasAy=${monthFrom}&donemBasYil=${yearFrom}&donemBitAy=${monthTo}&donemBitYil=${yearTo}&${document.querySelector('[name="sorguTipiV"]').checked ? 'sorguTipiV=1&':''}vdKodu=10&${document.querySelector('[name="sorguTipiZ"]').checked ? 'sorguTipiZ=1&':''}baslangicTarihi=${new Date().toLocaleDateString('ru')}&bitisTarihi=${new Date().toLocaleDateString('ru')}&${document.querySelector('[name="sorguTipiD"]').checked ? 'sorguTipiD=1&':''}durum=4&${document.querySelector('[name="sorguTipiS"]').checked ? 'sorguTipiS=1&':''}sentType=12${document.querySelector("input[type=checkbox][name='sorguTipiDt']").checked ? '&sorguTipiDt=1&declType='+encodeURI(declType):''}`
@@ -1560,23 +1478,10 @@ const func = async () => {
                     let response = await fetch('https://www.e-taxes.gov.az/vedop2/ebyn/dispatch', {
                         headers: {
                             accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                            'accept-language': 'en-US,en;q=0.9',
-                            'cache-control': 'max-age=0',
                             'content-type': 'application/x-www-form-urlencoded',
-                            'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                            'sec-ch-ua-mobile': '?0',
-                            'sec-fetch-dest': 'document',
-                            'sec-fetch-mode': 'navigate',
-                            'sec-fetch-site': 'same-origin',
-                            'sec-fetch-user': '?1',
-                            'upgrade-insecure-requests': '1',
                         },
-                        referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                        referrerPolicy: 'strict-origin-when-cross-origin',
                         body: data,
                         method: 'POST',
-                        mode: 'cors',
-                        credentials: 'include',
                     }).then((response) => response.text())
                     let doc = new DOMParser().parseFromString(response,'text/html')
                     let nodes = []
@@ -1621,26 +1526,7 @@ const func = async () => {
                                 for (let ttt = 0; ttt < 10; ttt++){
                                     try {
                                         url = `https://www.e-taxes.gov.az/vedop2/ebyn/dispatch?cmd=EDV_EBYN_DOWNLOAD_PACKAGE&USERID=${String(USERID)}&S_USERID=${String(USERID)}&PACKAGE_OID=${PACKAGE_OID}&PACKAGE_NAME=${PACKAGE_NAME}&TOKEN=${token}`
-                                        let resp = await fetch(
-                                            url, {
-                                                headers: {
-                                                    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                                                    'accept-language': 'en-US,en;q=0.9',
-                                                    'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
-                                                    'sec-ch-ua-mobile': '?0',
-                                                    'sec-fetch-dest': 'iframe',
-                                                    'sec-fetch-mode': 'navigate',
-                                                    'sec-fetch-site': 'same-origin',
-                                                    'upgrade-insecure-requests': '1',
-                                                },
-                                                referrer: 'https://www.e-taxes.gov.az/vedop2/ebyn/dispatch',
-                                                referrerPolicy: 'strict-origin-when-cross-origin',
-                                                body: null,
-                                                method: 'GET',
-                                                mode: 'cors',
-                                                credentials: 'include',
-                                            }
-                                        ).then(resp=>resp.blob())
+                                        let resp = await fetch(url).then(resp=>resp.blob())
                                         blob = new Blob([resp], { type: "application/zip" })
                                         if (blob.size < 800){
                                             continue
@@ -3568,20 +3454,10 @@ async function printList(){
             sleep(1000)
             const response = await fetch(`https://qaime.e-taxes.gov.az/service/eqaime.${pages[currentPage][0]}`, {
                 "headers": {
-                    "accept": "text/plain, */*; q=0.01",
-                    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "sec-ch-ua": "\"Chromium\";v=\"92\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"92\"",
-                    "sec-ch-ua-mobile": "?0",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-origin",
-                    "x-requested-with": "XMLHttpRequest"
                 },
                 "body": `voen=${filterTaxId}&wfState=${filterStatus}&docType=${filterType}&fromDate=${dateToString(filterFromDate)}&toDate=${dateToString(filterToDate)}&vhfSeria=${filterSer}&vhfNum=${filterNumber}&pagination%5Boffset%5D=${(page-1)*200}&pagination%5Blimit%5D=200`,
                 "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
             }).then(response=>response.json());
             const eqfs = response[pages[currentPage][1]];
             lists.push(...eqfs)
@@ -3644,20 +3520,10 @@ async function printList(){
                         } else {
                             let request = await fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
                                 'headers': {
-                                    'accept': 'text/plain, */*; q=0.01',
-                                    'accept-language': 'en-US,en;q=0.9',
                                     'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                    'sec-ch-ua': '\'Google Chrome\';v=\'87\', \' Not;A Brand\';v=\'99\', \'Chromium\';v=\'87\'',
-                                    'sec-ch-ua-mobile': '?0',
-                                    'sec-fetch-dest': 'empty',
-                                    'sec-fetch-mode': 'cors',
-                                    'sec-fetch-site': 'same-origin',
-                                    'x-requested-with': 'XMLHttpRequest'
                                 },
                                 'body': `docOidList%5B%5D=${x.oid}`,
                                 'method': 'POST',
-                                'mode': 'cors',
-                                'credentials': 'include'
                             })
                             for (let t = 0; t <= 20 ; t++){
                                 try {
@@ -3723,20 +3589,10 @@ async function printList(){
             } else {
                 let request = await fetch('https://qaime.e-taxes.gov.az/service/eqaime.printQaime', {
                     'headers': {
-                        'accept': 'text/plain, */*; q=0.01',
-                        'accept-language': 'en-US,en;q=0.9',
                         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'sec-ch-ua': '\'Google Chrome\';v=\'87\', \' Not;A Brand\';v=\'99\', \'Chromium\';v=\'87\'',
-                        'sec-ch-ua-mobile': '?0',
-                        'sec-fetch-dest': 'empty',
-                        'sec-fetch-mode': 'cors',
-                        'sec-fetch-site': 'same-origin',
-                        'x-requested-with': 'XMLHttpRequest'
                     },
                     'body': `docOidList%5B%5D=${x.oid}`,
                     'method': 'POST',
-                    'mode': 'cors',
-                    'credentials': 'include'
                 })
                 for (let t = 0; t <= 20 ; t++){
                     try {
@@ -3913,23 +3769,10 @@ async function sleep(ms){
     for (let i = 0; i < children.length; i++){
         const response = await fetch("https://qaime.e-taxes.gov.az/service/eqaime.printQaime", {
             "headers": {
-                "accept": "text/plain, */*; q=0.01",
-                "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "sec-ch-ua": "\"Google Chrome\";v=\"93\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"93\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "x-requested-with": "XMLHttpRequest"
             },
-            //"referrer": "https://qaime.e-taxes.gov.az/getDocData?docOid=61374bba51689&docNo=EBBH712022",
-            "referrerPolicy": "strict-origin-when-cross-origin",
             "body": "docOidList%5B%5D=" + children[i].dataset.docoid,
             "method": "POST",
-            "mode": "cors",
-            "credentials": "include"
         }).then(response=>response.json())
         .then(response=>b64DecodeUnicode(response.value.htmlList[0]))
         try {
