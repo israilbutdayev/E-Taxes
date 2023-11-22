@@ -405,35 +405,31 @@ const func = async () => {
             observer.observe(document.querySelector("#regContent"),options)
         }
         if (window.location.href.includes('qaime.e-taxes.gov.az/')){
-            for(let i = 0; i<= 100;i++){
-                try {
-                    await sleep(1000)
-                    let token = document?.cookie?.match(/\s?token=(.*?);/)?.[1]
-                    let btn = document.createElement('button')
-                    btn.style.backgroundColor = 'transparent';
-                    btn.style.width = '100%'
-                    btn.textContent = 'Import'
-                    btn.addEventListener('click',()=>{
-                        fetch('http://localhost:3000',{
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            method: 'POST',
-                            body: JSON.stringify({token: token})
-                        })
+            const interval = setInterval(()=>{
+                let token = document?.cookie?.match(/(?:^|\s)token=(.*?);/)?.[1]
+                let btn = document.createElement('button')
+                btn.style.backgroundColor = 'transparent';
+                btn.style.width = '100%'
+                btn.textContent = 'Import'
+                btn.addEventListener('click',()=>{
+                    fetch('http://localhost:3000',{
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        method: 'POST',
+                        body: JSON.stringify({token: token})
                     })
-                    document.querySelector("#sidebarMenu").appendChild(btn)
-                    let li = document.createElement('li')
-                    document.querySelector("#sidebarMenu").appendChild(li)
-                    li.textContent = token;
-                    li.style.wordWrap = 'break-word'
-                    li.style.color = 'transparent'
-                    console.log(token)
-                    break;
-                } catch(error) {
-                }
+                })
+                document.querySelector("#sidebarMenu").appendChild(btn)
+                let li = document.createElement('li')
+                document.querySelector("#sidebarMenu").appendChild(li)
+                li.textContent = token;
+                li.style.wordWrap = 'break-word'
+                li.style.color = 'transparent'
+                console.log(token)
+                clearInterval(interval)
+            }, 1000)
             }
-        }
         if (['getDocList','getAllDocList','getDrafts'].some(x=>window.location.href.includes(x))){
 
             (()=>{
@@ -444,7 +440,7 @@ const func = async () => {
                 adaptive_choice.id = 'userChecker'
                 adaptive_choice.style.marginLeft = '10px'
                 adaptive_choice.checked = false;
-                adaptive_choice.addEventListener('click',adaptive_choice_handler)
+                adaptive_choice.addEventListener('click', adaptive_choice_handler)
                 adaptive_choice.appendChild(document.createTextNode('Adaptiv Seçim'))
                 document.querySelector("#areaApp > div > div > div > div > div.col-md-10.docbuttons > div").appendChild(adaptive_choice)
                 async function adaptive_choice_handler(){
@@ -505,7 +501,10 @@ const func = async () => {
                                 const index = indexes[0].findIndex(v=>v === el)
                                 indexes[1].push(el)
                                 indexes[0].splice(index, 1)
-                                if (ind.length < indexes[1].length) {// indexes = [indexes[1], indexes[0]]
+                                if (indexes[1].length / ind.length > 2) {// indexes = [indexes[1], indexes[0]]
+                                    indexes[0].unshift(...indexes[1])
+                                    indexes[1] = ind
+                                    indexes[0] = indexes[0].filter(v=>!ind.includes(v))
                                 }
                                 s = indexes[0].length
                                 a = indexes[0].length
@@ -525,6 +524,16 @@ const func = async () => {
                                 console.log(index)
                             }
                         })
+                        indexes[1].forEach(index=>{
+                            try {
+                                tbody.rows[index].querySelector("td > div > span").classList.remove('checked')
+                            } catch(error){
+                                console.log(index)
+                            }
+                        })
+                        if (indexes[1].length){
+                            alert(`Bütün qaimələr seçilmədi.`)
+                        }
                         document.querySelector("#areaApp > div > div > div > div > div.col-md-10.docbuttons > div > button.btn.bg-green-800.dropdown-toggle.chooseAllOperations").disabled = false
                     }
                 }
@@ -1340,30 +1349,32 @@ const func = async () => {
                     }).then(response=>response.text()),'text/html')
                     for (let i = 0; i < tbody.children.length; i++){
                         let row = tbody.children[i]
-                        const taxId = row.querySelector('#taxId').textContent.replace(/\s/g,'')
-                        if (!taxId) {
-                            continue}
-                        const amount = row.querySelector('#amount').textContent.replace(/\,/g,'.').replace(/\s/g,'')
-                        const description = row.querySelector('#description').textContent
+                        const result = row.querySelector('#result').textContent
+                        if (!result){
+                            const taxId = row.querySelector('#taxId').textContent.replace(/\s/g,'')
+                            if (!taxId) {
+                                continue}
+                            const amount = row.querySelector('#amount').textContent.replace(/\,/g,'.').replace(/\s/g,'')
+                            const description = row.querySelector('#description').textContent
+                            const myTaxId = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(1)").innerText
+                            const taxName = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(2)").innerText
+                            const totalAmount = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(3)").innerText
 
-                        const myTaxId = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(1)").innerText
-                        const taxName = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(2)").innerText
-                        const totalAmount = doc.querySelector("#edv > table > tbody > tr:nth-child(1) > td > table:nth-child(3) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td > table > tbody > tr:nth-child(4) > td:nth-child(3)").innerText
-
-                        if (Number(amount) > Number(totalAmount)){
-                            row.querySelector('#result').textContent = 'Ödənilən məbləğ, sub uçot hesabının qalığından çox ola bilməz !!!'
-                            continue
+                            if (Number(amount) > Number(totalAmount)){
+                                row.querySelector('#result').textContent = 'Ödənilən məbləğ, sub uçot hesabının qalığından çox ola bilməz !!!'
+                                continue
+                            }
+                            const resp = await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
+                                "headers": {
+                                    "content-type": "application/x-www-form-urlencoded",
+                                },
+                                "method":"POST",
+                                "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${myTaxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${taxId}&edhOperationAmount=${amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
+                            }).then(resp=>resp.text())
+                            if(resp.includes('“İmzalanacaq sənədlər” qovluğuna göndərdiyiniz köçürmə əməliyyatı müvəffəqiyyətlə yerinə yetirildi.')){
+                                row.querySelector('#result').textContent = 'Yazıldı.'
+                            }
                         }
-
-                        await fetch("https://www.e-taxes.gov.az/vedop2/ebyn/dispatch", {
-                            "headers": {
-                                "content-type": "application/x-www-form-urlencoded",
-                            },
-                            "method":"POST",
-                            "body": `TOKEN=${token}&cmd=EDV_SAVE_AS_WAITING_OPERATION_SRV&grupSayi=0&signedFilePath=&ok=0&edhOperationDebVoenOid=${myTaxId}&bildirishNo=&edhOperationDebVoenName=${taxName}&waitingOperationOid=null&waitingOperationOidS=&totalAmount=${totalAmount}&specialAccount=0&specialAccount=0&specialAmount=0&waitingOperationOid_1=&operationType=1&edhOperationCrdVoenOid=${taxId}&edhOperationAmount=${amount}&hdnInvCount=0&OperationTeyinat=${encodeURI(description)}&daxilol=1&yxoCode=&treasureCode=0900111111`,
-                        }
-                                   );
-                        row.querySelector('#result').textContent = 'Yazıldı.'
                     }
 
                 }}
