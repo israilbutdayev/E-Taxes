@@ -14,7 +14,7 @@
 // ==/UserScript==
 
 'use strict';
-async function main(callback) {
+async function main() {
     if (window.location.href.includes('PG_QAIME_1')){
         const script = document.createElement('script')
         script.src = 'https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js'
@@ -110,14 +110,14 @@ async function main(callback) {
             }).then(response =>response.json())
             .then(response=>b64DecodeUnicode(response.htmlList[0]))
             .then(response=>new DOMParser().parseFromString(response,'text/html'))
-            if (html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent && html.querySelector('body > p:nth-child(4) > span:nth-child(5)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent){
+            if ([...html.querySelector("body > div:nth-child(4)").children].slice(1,-1).map(el=>el.textContent).join('')!==document.querySelector("#leftMenuOrgId").textContent && [...html.querySelector("body > div:nth-child(4)").children].slice(1,-1).map(el=>el.textContent).join('')!==document.querySelector("#leftMenuOrgId").textContent){
                 sessionStorage.removeItem('docoidToCopy')
                 //return ''
             }
-            document.querySelector("#customerVoen").value = html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10)!==document.querySelector("#leftMenuOrgId").textContent?html.querySelector('body > p:nth-child(4) > span:nth-child(2)').textContent.substring(0,10):html.querySelector('body > p:nth-child(4) > span:nth-child(5)').textContent.substring(0,10)
+            document.querySelector("#customerVoen").value = [...html.querySelector("body > div:nth-child(4)").children].slice(1,-1).map(el=>el.textContent).join('')!==document.querySelector("#leftMenuOrgId").textContent?[...html.querySelector("body > div:nth-child(4)").children].slice(1,-1).map(el=>el.textContent).join(''):[...html.querySelector("body > div:nth-child(6)").children].slice(1,-1).map(el=>el.textContent).join('')
             document.querySelector("#getCustomerVoen > i").click()
-            document.querySelector("#customerNotes").textContent = html.querySelector('body > p:nth-child(4) > span:nth-child(8)').textContent
-            document.querySelector("#customerNotes2").textContent = html.querySelector('body > p:nth-child(4) > span:nth-child(11)').textContent
+            document.querySelector("#customerNotes").textContent = html.querySelector('body > div:nth-child(8) > div')?.textContent
+            document.querySelector("#customerNotes2").textContent = html.querySelector('body > div.mt-3.mb-3 > div')?.textContent
             for (let i = 6; i <= html.querySelector('body > table > tbody').childNodes.length-2;i++){
                 let product = html.querySelector('body > table > tbody').childNodes[i]
                 document.querySelector("#addRow").click();
