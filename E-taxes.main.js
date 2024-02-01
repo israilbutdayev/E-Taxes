@@ -904,14 +904,10 @@ async function main() {
                 await sleep(timeout)
                 const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
                 const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
-                const No = ('000000' + hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
+                const No = hot.getSourceDataAtCell(i,3).replace(/\s/g,'')
                 let amount = hot.getSourceDataAtCell(i,4)?.replace(/\,/g,'.').replace(/\s/g,'')
                 const vat = Round(Number(amount)*0.18,2)
                 if (!ser || !No){
-                    continue;
-                }
-                if (ser.length!==4 && ser.length!==2){
-                    hot.setDataAtCell(i,6, 'Qaimənin Seriyası düzgün deyil');
                     continue;
                 }
                 //uploadRefundData(ser, No, amount, vat)
@@ -1097,12 +1093,8 @@ async function main() {
                 await sleep(timeout)
                 const rowNo = hot.getSourceDataAtCell(i,1)?.replace(/\s/g,'')
                 const ser = hot.getSourceDataAtCell(i,2)?.replace(/\s/g,'')
-                const No = ('000000' + hot.getSourceDataAtCell(i,3))?.slice(-6).replace(/\s/g,'')
+                const No = hot.getSourceDataAtCell(i,3).replace(/\s/g,'')
                 if (!ser || !No){
-                    continue;
-                }
-                if (ser.length!==4 && ser.length!==2){
-                    hot.setDataAtCell(i,6, 'Qaimənin Seriyası düzgün deyil');
                     continue;
                 }
                 const tbody = document.querySelector("#tableStriped2 > tbody");
